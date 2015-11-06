@@ -7,7 +7,9 @@ class ClustersLoop : public EL::Algorithm
 {
 public:
 
-	ClustersLoop ();
+	// have to explicitely ask for default constructor
+	// if we don't, job submission from driver script fails
+	ClustersLoop () = default;
 	virtual EL::StatusCode setupJob (EL::Job& job);
 	virtual EL::StatusCode fileExecute ();
 	virtual EL::StatusCode histInitialize ();
