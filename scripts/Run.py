@@ -45,6 +45,13 @@ clustersLoop = ROOT.ClustersLoop()
 # set options
 job.algsAdd(clustersLoop)
 
+output = ROOT.EL.OutputStream("NNinput")
+job.outputAdd(output)
+ntuple = ROOT.EL.NTupleSvc("NNinput")
+job.algsAdd(ntuple)
+
+clustersLoop.outputName = "NNinput"
+
 if args.driver == "direct":
     logging.info("Using the direct driver")
     driver = ROOT.EL.DirectDriver()

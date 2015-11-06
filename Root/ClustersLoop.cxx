@@ -1,6 +1,8 @@
+#include <TFile.h>
 #include <EventLoop/Job.h>
 #include <EventLoop/StatusCode.h>
 #include <EventLoop/Worker.h>
+#include <xAODEventInfo/EventInfo.h>
 #include <xAODRootAccess/Init.h>
 #include <xAODRootAccess/TEvent.h>
 #include <pixel-NN-dataset/ClustersLoop.h>
@@ -20,11 +22,28 @@ EL::StatusCode ClustersLoop :: setupJob (EL::Job& job)
 
 EL::StatusCode ClustersLoop :: histInitialize ()
 {
+	outtree = new TTree("NNinput", "NNinput");
+	outtree->SetDirectory(wk()->getOutputFile(outputName));
+
+	outtree->Branch("EventNumber", &out_EventNumber);
+
 	return EL::StatusCode::SUCCESS;
 }
 
 EL::StatusCode ClustersLoop :: execute ()
 {
+	xAOD::TEvent* event = wk()->xaodEvent();
+
+	const xAOD::EventInfo *eventInfo = 0;
+	xAOD::TReturnCode rc = event->retrieve(eventInfo, "EventInfo");
+	if (! rc.isSuccess()) {
+		Error("execute()", "Failed to retrieve EventInfo");
+		return EL::StatusCode::FAILURE;
+	}
+
+	out_EventNumber = eventInfo->eventNumber();
+
+	outtree->Fill();
 	return EL::StatusCode::SUCCESS;
 }
 

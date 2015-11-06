@@ -1,11 +1,18 @@
 #ifndef pixel_NN_dataset_ClustersLoop_H
 #define pixel_NN_dataset_ClustersLoop_H
 
+#include <string>
+#include <TTree.h>
 #include <EventLoop/Algorithm.h>
 
 class ClustersLoop : public EL::Algorithm
 {
 public:
+	std::string outputName;
+	TTree *outtree;  //!
+
+	// output variables
+	int out_EventNumber; //!
 
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails
