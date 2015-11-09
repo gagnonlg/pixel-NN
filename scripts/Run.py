@@ -20,6 +20,7 @@ argp.add_argument("--submit-dir", default="submitDir",
 argp.add_argument("--driver", choices=["direct", "grid"], default="direct",
                   help="job type")
 argp.add_argument("--overwrite", action='store_const', const=True, default=False)
+argp.add_argument("--nevents", type=int, default=None)
 args = argp.parse_args()
 
 if args.overwrite:
@@ -40,6 +41,10 @@ logging.info("found %d datasets" % len(sampleHandler))
 
 job = ROOT.EL.Job()
 job.sampleHandler(sampleHandler)
+
+if args.nevents is not None:
+    logging.info("processing a maximum of %d events", args.nevents)
+    job.options().setDouble(ROOT.EL.Job.optMaxEvents, args.nevents)
 
 clustersLoop = ROOT.ClustersLoop()
 # set options
