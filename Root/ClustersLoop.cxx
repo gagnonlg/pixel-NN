@@ -53,10 +53,18 @@ EL::StatusCode ClustersLoop :: initialize ()
 	out_matrix.resize(out_sizeX * out_sizeY);
 
 	float *matrixPtr = out_matrix.data();
-	char matrixbranch[strlen("NN_matrix??") + 1];
+	char matrixbranch[strlen("NN_matrix???") + 1];
 	for (int i = 0; i < out_sizeX*out_sizeY; i++) {
 		std::sprintf(matrixbranch, "NN_matrix%d", i);
 		outtree->Branch(matrixbranch, matrixPtr + i);
+	}
+
+	out_pitches.resize(out_sizeY);
+	float *pitchesPtr = out_pitches.data();
+	char pitchesbranch[strlen("NN_pitches???") + 1];
+	for (int i = 0; i < out_sizeY; i++) {
+		std::sprintf(pitchesbranch, "NN_pitches%d", i);
+		outtree->Branch(pitchesbranch, pitchesPtr + i);
 	}
 
 	return EL::StatusCode::SUCCESS;

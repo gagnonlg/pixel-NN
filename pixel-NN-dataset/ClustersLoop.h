@@ -19,6 +19,7 @@ public:
 	int out_sizeX; //!
 	int out_sizeY; //!
 	std::vector<float> out_matrix; //!
+	std::vector<float> out_pitches; //!
 
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails
