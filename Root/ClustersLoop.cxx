@@ -32,6 +32,8 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->Branch("RunNumber", &out_RunNumber);
 	outtree->Branch("EventNumber", &out_EventNumber);
 	outtree->Branch("ClusterNumber", &out_ClusterNumber);
+	outtree->Branch("NN_sizeX", &out_sizeX);
+	outtree->Branch("NN_sizeY", &out_sizeY);
 
 	return EL::StatusCode::SUCCESS;
 }
