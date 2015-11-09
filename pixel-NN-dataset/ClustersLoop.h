@@ -13,7 +13,9 @@ public:
 	TTree *outtree;  //!
 
 	// output variables
+	int out_RunNumber; //!
 	int out_EventNumber; //!
+	int out_ClusterNumber; //!
 	int out_sizeX; //!
 	int out_sizeY; //!
 	std::vector<float> out_matrix; //!

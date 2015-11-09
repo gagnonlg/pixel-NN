@@ -29,7 +29,9 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree = new TTree("NNinput", "NNinput");
 	outtree->SetDirectory(wk()->getOutputFile(outputName));
 
+	outtree->Branch("RunNumber", &out_RunNumber);
 	outtree->Branch("EventNumber", &out_EventNumber);
+	outtree->Branch("ClusterNumber", &out_ClusterNumber);
 
 	return EL::StatusCode::SUCCESS;
 }
@@ -71,7 +73,9 @@ EL::StatusCode ClustersLoop :: execute ()
 		return EL::StatusCode::FAILURE;
 	}
 
+	out_RunNumber = eventInfo->runNumber();
 	out_EventNumber = eventInfo->eventNumber();
+	out_ClusterNumber = 0;
 
 	outtree->Fill();
 	return EL::StatusCode::SUCCESS;
