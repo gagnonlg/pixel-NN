@@ -2,6 +2,7 @@
 #define pixel_NN_dataset_ClustersLoop_H
 
 #include <string>
+#include <vector>
 #include <TTree.h>
 #include <EventLoop/Algorithm.h>
 
@@ -13,6 +14,9 @@ public:
 
 	// output variables
 	int out_EventNumber; //!
+	int out_sizeX; //!
+	int out_sizeY; //!
+	std::vector<float> out_matrix; //!
 
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails
@@ -26,6 +30,8 @@ public:
 	virtual EL::StatusCode postExecute ();
 	virtual EL::StatusCode finalize ();
 	virtual EL::StatusCode histFinalize ();
+
+	size_t getMatrixSize();
 
 	ClassDef(ClustersLoop, 1);
 };

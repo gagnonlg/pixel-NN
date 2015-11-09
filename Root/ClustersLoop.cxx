@@ -1,3 +1,6 @@
+#include <cstdio>
+#include <cstring>
+#include <vector>
 #include <TFile.h>
 #include <EventLoop/Job.h>
 #include <EventLoop/StatusCode.h>
@@ -5,6 +8,7 @@
 #include <xAODEventInfo/EventInfo.h>
 #include <xAODRootAccess/Init.h>
 #include <xAODRootAccess/TEvent.h>
+#include <xAODTracking/TrackMeasurementValidation.h>
 #include <pixel-NN-dataset/ClustersLoop.h>
 
 ClassImp(ClustersLoop)
@@ -26,6 +30,32 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->SetDirectory(wk()->getOutputFile(outputName));
 
 	outtree->Branch("EventNumber", &out_EventNumber);
+
+	return EL::StatusCode::SUCCESS;
+}
+
+EL::StatusCode ClustersLoop :: initialize ()
+{
+	xAOD::TEvent* event = wk()->xaodEvent();
+
+	const DataVector<xAOD::TrackMeasurementValidation> *clusters;
+	xAOD::TReturnCode rc = event->retrieve(clusters, "PixelClusters");
+	if (! rc.isSuccess()) {
+		Error("Initialize()", "Failed to retrieve PixelClusters");
+		return EL::StatusCode::FAILURE;
+	}
+
+	const xAOD::TrackMeasurementValidation *cl = clusters->at(0);
+	out_sizeX = cl->auxdata<int>("NN_sizeX");
+	out_sizeY = cl->auxdata<int>("NN_sizeY");
+	out_matrix.resize(out_sizeX * out_sizeY);
+
+	float *matrixPtr = out_matrix.data();
+	char matrixbranch[strlen("NN_matrix??") + 1];
+	for (int i = 0; i < out_sizeX*out_sizeY; i++) {
+		std::sprintf(matrixbranch, "NN_matrix%d", i);
+		outtree->Branch(matrixbranch, matrixPtr + i);
+	}
 
 	return EL::StatusCode::SUCCESS;
 }
@@ -59,10 +89,7 @@ EL::StatusCode ClustersLoop :: changeInput (bool /*firstFile*/)
 	return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode ClustersLoop :: initialize ()
-{
-	return EL::StatusCode::SUCCESS;
-}
+
 
 EL::StatusCode ClustersLoop :: postExecute ()
 {
