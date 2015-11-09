@@ -21,6 +21,9 @@ argp.add_argument("--driver", choices=["direct", "grid"], default="direct",
                   help="job type")
 argp.add_argument("--overwrite", action='store_const', const=True, default=False)
 argp.add_argument("--nevents", type=int, default=None)
+argp.add_argument("--type",
+                  choices=['number','pos1','pos2','pos3'],
+                  default='number')
 args = argp.parse_args()
 
 if args.overwrite:
@@ -48,6 +51,13 @@ if args.nevents is not None:
 
 clustersLoop = ROOT.ClustersLoop()
 # set options
+clustersLoop.NNtype = {
+    'number' : 0,
+    'pos1'   : 1,
+    'pos2'   : 2,
+    'pos3'   : 3
+}[args.type]
+logging.info("creating input for %s neural network", args.type)
 job.algsAdd(clustersLoop)
 
 output = ROOT.EL.OutputStream("NNinput")
