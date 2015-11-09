@@ -2,6 +2,7 @@
 #include <cstring>
 #include <vector>
 #include <TFile.h>
+#include <AthContainers/AuxElement.h>
 #include <EventLoop/Job.h>
 #include <EventLoop/StatusCode.h>
 #include <EventLoop/Worker.h>
@@ -119,10 +120,85 @@ EL::StatusCode ClustersLoop :: execute ()
 
 	out_RunNumber = eventInfo->runNumber();
 	out_EventNumber = eventInfo->eventNumber();
-	out_ClusterNumber = 0;
 
-	outtree->Fill();
+	const DataVector<xAOD::TrackMeasurementValidation> *clusters;
+	rc = event->retrieve(clusters, "PixelClusters");
+	if (! rc.isSuccess()) {
+		Error("Initialize()", "Failed to retrieve PixelClusters");
+		return EL::StatusCode::FAILURE;
+	}
+
+	clustersLoop(clusters);
+
 	return EL::StatusCode::SUCCESS;
+}
+
+#define accessor(n,t,v) SG::AuxElement::ConstAccessor< t > n (v)
+
+accessor(a_posX, std::vector<float>, "NN_positions_indexX");
+accessor(a_posY, std::vector<float>, "NN_positions_indexY");
+accessor(a_localEtaPixelIndexWeightedPosition, float,
+	 "NN_localEtaPixelIndexWeightedPosition");
+accessor(a_localPhiPixelIndexWeightedPosition, float,
+	 "NN_localPhiPixelIndexWeightedPosition");
+accessor(a_layer, int, "layer");
+accessor(a_bec, int, "bec");
+accessor(a_etaModule, int, "eta_module");
+accessor(a_matrix, std::vector<float>, "NN_matrixOfCharge");
+accessor(a_pitches, std::vector<float>, "NN_vectorOfPitchesY");
+
+#undef accessor
+
+
+void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>* clusters)
+{
+	out_ClusterNumber = 0;
+	for (auto c : *clusters) {
+		out_ClusterNumber += 1;
+
+		std::vector<float> posX = a_posX(*c);
+		std::vector<float> posY = a_posY(*c);
+
+		if ((NNtype == POS1 && posX.size() != 1) ||
+		    (NNtype == POS2 && posX.size() != 2) ||
+		    (NNtype == POS3 && posX.size() != 3))
+			continue;
+
+		out_localEtaPixelIndexWeightedPosition =
+			a_localEtaPixelIndexWeightedPosition(*c);
+		out_localPhiPixelIndexWeightedPosition =
+			a_localPhiPixelIndexWeightedPosition(*c);
+		out_layer = a_layer(*c);
+		out_barrelEC = a_bec(*c);
+		out_etaModule = a_etaModule(*c);
+
+		const std::vector<float> matrix = a_matrix(*c);
+		for (size_t i = 0; i < matrix.size(); i++)
+			out_matrix.at(i) = matrix.at(i);
+
+		const std::vector<float> pitches = a_pitches(*c);
+		for (size_t i = 0; i < pitches.size(); i++)
+			out_pitches.at(i) = pitches.at(i);
+
+		out_nparticles1 = posX.size() == 1;
+		out_nparticles2 = posX.size() == 2;
+		out_nparticles3 = posX.size() == 3;
+
+		if (NNtype >= POS1) {
+			out_position_id_X_0 = posX.at(0);
+			out_position_id_Y_0 = posY.at(0);
+		}
+		if (NNtype >= POS2) {
+			out_position_id_X_1 = posX.at(1);
+			out_position_id_Y_1 = posY.at(1);
+		}
+		if (NNtype >= POS3) {
+			out_position_id_X_2 = posX.at(2);
+			out_position_id_Y_2 = posY.at(2);
+		}
+
+		outtree->Fill();
+	}
 }
 
 /*-------------------- unneeded stuff -----------------------------------------*/

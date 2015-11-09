@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include <TTree.h>
+#include <AthContainers/DataVector.h>
 #include <EventLoop/Algorithm.h>
+#include <xAODTracking/TrackMeasurementValidation.h>
 
 #define NUMBER  0
 #define POS1    1
@@ -16,6 +18,7 @@
 #define ERRORY2 7
 #define ERRORX3 8
 #define ERRORY3 9
+
 
 class ClustersLoop : public EL::Algorithm
 {
@@ -65,7 +68,7 @@ public:
 	virtual EL::StatusCode finalize ();
 	virtual EL::StatusCode histFinalize ();
 
-	size_t getMatrixSize();
+	void clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>*);
 
 	ClassDef(ClustersLoop, 1);
 };
