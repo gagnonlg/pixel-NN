@@ -34,6 +34,40 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->Branch("ClusterNumber", &out_ClusterNumber);
 	outtree->Branch("NN_sizeX", &out_sizeX);
 	outtree->Branch("NN_sizeY", &out_sizeY);
+	outtree->Branch("NN_localEtaPixelIndexWeightedPosition",
+			&out_localEtaPixelIndexWeightedPosition);
+	outtree->Branch("NN_localPhiPixelIndexWeightedPosition",
+			&out_localPhiPixelIndexWeightedPosition);
+	outtree->Branch("NN_layer", &out_layer);
+	outtree->Branch("NN_barrelEC", &out_barrelEC);
+	outtree->Branch("NN_etaModule", &out_etaModule);
+	outtree->Branch("NN_phi", &out_phi);
+	outtree->Branch("NN_theta", &out_theta);
+
+	if (NNtype == NUMBER) {
+		outtree->Branch("NN_nparticles1", &out_nparticles1);
+		outtree->Branch("NN_nparticles2", &out_nparticles2);
+		outtree->Branch("NN_nparticles3", &out_nparticles3);
+	} else if (NNtype < ERRORX1) {
+		if (NNtype >= POS1) {
+			outtree->Branch("NN_position_id_X_0",
+					&out_position_id_X_0);
+			outtree->Branch("NN_position_id_Y_0",
+					&out_position_id_Y_0);
+		}
+		if (NNtype >= POS2) {
+			outtree->Branch("NN_position_id_X_1",
+					&out_position_id_X_1);
+			outtree->Branch("NN_position_id_Y_1",
+					&out_position_id_Y_1);
+		}
+		if (NNtype >= POS3) {
+			outtree->Branch("NN_position_id_X_2",
+					&out_position_id_X_2);
+			outtree->Branch("NN_position_id_Y_2",
+					&out_position_id_Y_2);
+		}
+	}
 
 	return EL::StatusCode::SUCCESS;
 }
