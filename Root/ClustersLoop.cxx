@@ -146,6 +146,8 @@ accessor(a_bec, int, "bec");
 accessor(a_etaModule, int, "eta_module");
 accessor(a_matrix, std::vector<float>, "NN_matrixOfCharge");
 accessor(a_pitches, std::vector<float>, "NN_vectorOfPitchesY");
+accessor(a_theta, std::vector<float>,  "NN_theta");
+accessor(a_phi, std::vector<float>,  "NN_phi");
 
 #undef accessor
 
@@ -197,7 +199,13 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 			out_position_id_Y_2 = posY.at(2);
 		}
 
-		outtree->Fill();
+		std::vector<float> theta = a_theta(*c);
+		std::vector<float> phi = a_phi(*c);
+		for (size_t i = 0; i < theta.size(); i++) {
+			out_theta = theta.at(i);
+			out_phi   = phi.at(i);
+			outtree->Fill();
+		}
 	}
 }
 
