@@ -24,6 +24,7 @@ argp.add_argument("--nevents", type=int, default=None)
 argp.add_argument("--type",
                   choices=['number','pos1','pos2','pos3'],
                   default='number')
+argp.add_argument("--version", type=int, default=None)
 args = argp.parse_args()
 
 if args.overwrite:
@@ -74,10 +75,19 @@ elif args.driver == "grid":
     logging.info("Using the grid driver")
     driver = ROOT.EL.PrunDriver()
 
-name =  "user.%nickname%.%in:name[2]%."
-name += args.process if args.process is not None else "%in:name[3]"
-name += ".%in:name[5]%.%in:name[6]%."
-name += "NNInput_%d_%d" % (version_major, version_minor)
+# 1 : group
+# 2 : perf-idtracking:group
+# 3 : perf-idtracking
+# 4 : <DSID>
+# 5 : <PROCESS>
+# 6 : <DATATYPE>
+# 7 : <TAGS>
+name =  "user.%nickname%.%in:name[4]%."
+name += args.process if args.process is not None else "%in:name[5]"
+name += ".%in:name[6]%.%in:name[7]%."
+name += "NNInput-%s_%d_%d" % (args.type,version_major, version_minor)
+if args.version is not None:
+    name += "_%d" % args.version
 
 driver.options().setString("nc_outputSampleName", name)
 
