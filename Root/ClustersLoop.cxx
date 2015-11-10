@@ -1,6 +1,8 @@
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <utility>
 #include <vector>
 #include <TFile.h>
 #include <AthContainers/AuxElement.h>
@@ -154,6 +156,24 @@ accessor(a_phi, std::vector<float>,  "NN_phi");
 
 #undef accessor
 
+typedef std::vector<std::pair<float,float> > Positions;
+
+bool pairComp(std::pair<float,float> a, std::pair<float,float> b)
+{
+	if (a.first == b.first)
+		return a.second < b.second;
+	else
+		return a.first < b.first;
+}
+
+Positions sortedPositions(std::vector<float>& xs, std::vector<float>& ys)
+{
+	Positions ps;
+	for (size_t i = 0; i < xs.size(); i++)
+		ps.push_back(std::make_pair(xs.at(i), ys.at(i)));
+	std::sort(ps.begin(), ps.end(), pairComp);
+	return ps;
+}
 
 void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>* clusters)
 {
@@ -213,18 +233,19 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_nparticles2 = posX.size() == 2;
 		out_nparticles3 = posX.size() == 3;
 
-		// TODO sort positions
+		/* Sort and store the positions */
+		Positions ps = sortedPositions(posX, posY);
 		if (NNtype >= POS1) {
-			out_position_id_X_0 = posX.at(0);
-			out_position_id_Y_0 = posY.at(0);
+			out_position_id_X_0 = ps.at(0).first;
+			out_position_id_Y_0 = ps.at(0).second;
 		}
 		if (NNtype >= POS2) {
-			out_position_id_X_1 = posX.at(1);
-			out_position_id_Y_1 = posY.at(1);
+			out_position_id_X_1 = ps.at(1).first;
+			out_position_id_Y_1 = ps.at(1).second;
 		}
 		if (NNtype >= POS3) {
-			out_position_id_X_2 = posX.at(2);
-			out_position_id_Y_2 = posY.at(2);
+			out_position_id_X_2 = ps.at(2).first;
+			out_position_id_Y_2 = ps.at(2).first;
 		}
 
 		/* Loop over angles */
