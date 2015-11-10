@@ -233,6 +233,10 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 			if (out_theta == 0 || std::isnan(out_theta))
 				continue;
 			out_phi   = phi.at(i);
+			if (out_barrelEC == 2) {
+				out_theta *= -1;
+				out_phi   *= -1;
+			}
 			outtree->Fill();
 		}
 	}
