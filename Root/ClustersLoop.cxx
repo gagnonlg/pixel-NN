@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -135,6 +136,8 @@ EL::StatusCode ClustersLoop :: execute ()
 
 #define accessor(n,t,v) SG::AuxElement::ConstAccessor< t > n (v)
 
+accessor(a_sizeX, int, "NN_sizeX");
+accessor(a_sizeY, int, "NN_sizeY");
 accessor(a_posX, std::vector<float>, "NN_positions_indexX");
 accessor(a_posY, std::vector<float>, "NN_positions_indexY");
 accessor(a_localEtaPixelIndexWeightedPosition, float,
@@ -158,14 +161,11 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 	for (auto c : *clusters) {
 		out_ClusterNumber += 1;
 
+		/* fetch cluster observables */
+		const std::vector<float> matrix = a_matrix(*c);
 		std::vector<float> posX = a_posX(*c);
 		std::vector<float> posY = a_posY(*c);
-
-		if ((NNtype == POS1 && posX.size() != 1) ||
-		    (NNtype == POS2 && posX.size() != 2) ||
-		    (NNtype == POS3 && posX.size() != 3))
-			continue;
-
+		const std::vector<float> pitches = a_pitches(*c);
 		out_localEtaPixelIndexWeightedPosition =
 			a_localEtaPixelIndexWeightedPosition(*c);
 		out_localPhiPixelIndexWeightedPosition =
@@ -173,19 +173,47 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_layer = a_layer(*c);
 		out_barrelEC = a_bec(*c);
 		out_etaModule = a_etaModule(*c);
+		std::vector<float> theta = a_theta(*c);
+		std::vector<float> phi = a_phi(*c);
+		int sizeX = a_sizeX(*c);
+		int sizeY = a_sizeY(*c);
 
-		const std::vector<float> matrix = a_matrix(*c);
+		/* check if good cluster */
+		// matrix size
+		if (matrix.size() == 0)
+			continue;
+		if ((int)matrix.size() != sizeX * sizeY)
+			continue;
+		if (matrix.size() != out_matrix.size())
+			continue;
+		// NN_sizeX value
+		if (sizeX == -100)
+			continue;
+		// nparticles
+		if (posX.size() == 0)
+			continue;
+		if ((NNtype == POS1 && posX.size() != 1) ||
+		    (NNtype == POS2 && posX.size() != 2) ||
+		    (NNtype == POS3 && posX.size() != 3))
+			continue;
+		// BEC
+		if (abs(out_barrelEC > 2))
+			continue;
+
+		/* Fill charge matrix */
 		for (size_t i = 0; i < matrix.size(); i++)
 			out_matrix.at(i) = matrix.at(i);
 
-		const std::vector<float> pitches = a_pitches(*c);
+		/* Fill vector of pitches */
 		for (size_t i = 0; i < pitches.size(); i++)
 			out_pitches.at(i) = pitches.at(i);
 
+		/* Determine number of particles */
 		out_nparticles1 = posX.size() == 1;
 		out_nparticles2 = posX.size() == 2;
 		out_nparticles3 = posX.size() == 3;
 
+		// TODO sort positions
 		if (NNtype >= POS1) {
 			out_position_id_X_0 = posX.at(0);
 			out_position_id_Y_0 = posY.at(0);
@@ -199,10 +227,11 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 			out_position_id_Y_2 = posY.at(2);
 		}
 
-		std::vector<float> theta = a_theta(*c);
-		std::vector<float> phi = a_phi(*c);
+		/* Loop over angles */
 		for (size_t i = 0; i < theta.size(); i++) {
 			out_theta = theta.at(i);
+			if (out_theta == 0 || std::isnan(out_theta))
+				continue;
 			out_phi   = phi.at(i);
 			outtree->Fill();
 		}
