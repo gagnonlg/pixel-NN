@@ -85,7 +85,7 @@ elif args.driver == "grid":
 name =  "user.%nickname%.%in:name[4]%."
 name += args.process if args.process is not None else "%in:name[5]"
 name += ".%in:name[6]%.%in:name[7]%."
-name += "NNInput-%s_%d_%d" % (args.type,version_major, version_minor)
+name += "%s_%d_%d" % (args.type,version_major, version_minor)
 if args.version is not None:
     name += "_%d" % args.version
 
