@@ -1,4 +1,4 @@
-#include <pixel-NN-dataset/ClustersLoop.h>
+#include <pixel-NN/ClustersLoop.h>
 
 #ifdef __CINT__
 

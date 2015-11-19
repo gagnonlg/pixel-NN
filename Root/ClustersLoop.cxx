@@ -13,7 +13,7 @@
 #include <xAODRootAccess/Init.h>
 #include <xAODRootAccess/TEvent.h>
 #include <xAODTracking/TrackMeasurementValidation.h>
-#include <pixel-NN-dataset/ClustersLoop.h>
+#include <pixel-NN/ClustersLoop.h>
 
 ClassImp(ClustersLoop)
 
