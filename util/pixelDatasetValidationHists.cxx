@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 	TFile outfile(argv[2], "CREATE");
 
 	std::map<std::string, TH1D*> hists;
-	hists["layer"] =    new TH1D("h_layer", "", 4, 0, 3);
+	hists["layer"] =    new TH1D("h_layer", "", 4, 0, 4);
 	hists["barrelEC"] = new TH1D("h_barrelEC", "", 11, -5, 5);
 	hists["phi"] =      new TH1D("h_phi", "", 100, -5, 5);
 	hists["theta"] =    new TH1D("h_theta", "", 100, -5, 5);
@@ -80,21 +80,21 @@ int main(int argc, char *argv[])
 	}
 
 	if (type >= POS1) {
-		hists["position_X_0"] = new TH1D("h_position_X_0", "", 1000, -500, 500);
+		hists["position_X_0"] = new TH1D("h_position_X_0", "", 200, -10, 10);
 		CONNECT(NN_position_id_X_0);
-		hists["position_Y_0"] = new TH1D("h_position_Y_0", "", 1000, -500, 500);
+		hists["position_Y_0"] = new TH1D("h_position_Y_0", "", 200, -10, 10);
 		CONNECT(NN_position_id_Y_0);
 	}
 	if (type >= POS2) {
-		hists["position_X_1"] = new TH1D("h_position_X_1", "", 1000, -500, 500);
+		hists["position_X_1"] = new TH1D("h_position_X_1", "", 200, -10, 10);
 		CONNECT(NN_position_id_X_1);
-		hists["position_Y_1"] = new TH1D("h_position_Y_1", "", 1000, -500, 500);
+		hists["position_Y_1"] = new TH1D("h_position_Y_1", "", 200, -10, 10);
 		CONNECT(NN_position_id_Y_1);
 	}
 	if (type >= POS3) {
-		hists["position_X_2"] = new TH1D("h_position_X_2", "", 1000, -500, 500);
+		hists["position_X_2"] = new TH1D("h_position_X_2", "", 200, -10, 10);
 		CONNECT(NN_position_id_X_2);
-		hists["position_Y_2"] = new TH1D("h_position_Y_2", "", 1000, -500, 500);
+		hists["position_Y_2"] = new TH1D("h_position_Y_2", "", 200, -10, 10);
 		CONNECT(NN_position_id_Y_2);
 	}
 
