@@ -93,7 +93,7 @@ elif args.driver == "grid":
 name =  "user.%nickname%.%in:name[4]%."
 name += args.process if args.process is not None else "%in:name[5]"
 name += ".%in:name[6]%.%in:name[7]%."
-name += "$s-%s" % (args.type , "version")
+name += "$s-%s" % (args.type , version)
 
 logging.info("Will tag with version %s" % version)
 
