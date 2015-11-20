@@ -3,7 +3,6 @@ set -x
 for type in number pos1 pos2 pos3
 do
     python2 Run.py \
-	    --version ${VERSION:-1} \
 	    --type $type \
 	    --process JZ4 \
 	    --submit-dir JZ4 \

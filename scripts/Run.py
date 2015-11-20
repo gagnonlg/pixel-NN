@@ -1,10 +1,15 @@
 import argparse
+import os
 import shutil
+import subprocess
 import ROOT
 import logging
 
-version_major = 0 # incremented when dataset composition changes
-version_minor = 0 # incremented when bugs are fixed
+dirp = os.path.dirname(os.path.realpath(__file__))
+try:
+    version  = subprocess.check_output("cd %s && git describe --long" % dirp, shell=True).replace('.','-').strip()
+except OSError:
+    version = ""
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,8 +29,11 @@ argp.add_argument("--nevents", type=int, default=None)
 argp.add_argument("--type",
                   choices=['number','pos1','pos2','pos3'],
                   default='number')
-argp.add_argument("--version", type=int, default=None)
+argp.add_argument("--version", default=None, help="version id used when cannot use git")
 args = argp.parse_args()
+
+if version == "":
+    version = "0-1_%s" % ('?' if args.version is None else args.version)
 
 if args.overwrite:
     logging.warning("overwriting %s directory (if present)" % args.submit_dir)
@@ -85,9 +93,10 @@ elif args.driver == "grid":
 name =  "user.%nickname%.%in:name[4]%."
 name += args.process if args.process is not None else "%in:name[5]"
 name += ".%in:name[6]%.%in:name[7]%."
-name += "%s_%d_%d" % (args.type,version_major, version_minor)
-if args.version is not None:
-    name += "_%d" % args.version
+name += version
+
+logging.info("Will tag with version %s" % version)
+
 
 driver.options().setString("nc_outputSampleName", name)
 
