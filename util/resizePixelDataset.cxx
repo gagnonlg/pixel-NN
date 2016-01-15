@@ -9,8 +9,10 @@ int main(int argc, char *argv[])
 	size_t n1,c1;
 	size_t n2,c2;
 	size_t n3,c3;
+	size_t n,c;
+	size_t skip = 0;
 
-	n1 = c1 = n2 = c2 = n3 = c3 = 0;
+	n1 = c1 = n2 = c2 = n3 = c3 = n = c = 0;
 
 	for (i = 1; i < argc && argv[i][0] == '-'; i += 2) {
 		if (!argv[i+1]) {
@@ -27,6 +29,12 @@ int main(int argc, char *argv[])
 		case '3':
 			n3 = std::atoll(argv[i+1]);
 			break;
+		case 'n':
+			n = std::atoll(argv[i+1]);
+			break;
+		case 's':
+			skip = std::atoll(argv[i+1]);
+			break;
 		default:
 			std::fprintf(stderr, "unrecognized argument\n");
 			return 1;
@@ -34,7 +42,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc - i < 2) {
-		std::fprintf(stderr, "usage: %s [-{1,2,3} N] out.root in.root in2.root ...\n", argv[0]);
+		std::fprintf(stderr, "usage: %s [-{1,2,3,n} N] out.root in.root in2.root ...\n", argv[0]);
 		return 1;
 	}
 
@@ -53,13 +61,13 @@ int main(int argc, char *argv[])
 
 	TTree *tree = (TTree*)chain.GetTree()->CloneTree(0);
 
-	int particles1;
+	float particles1;
 	if (chain.FindBranch("NN_nparticles1"))
 		chain.SetBranchAddress("NN_nparticles1", &particles1);
 	else
 		particles1 = 1;
 
-	int particles2;
+	float particles2;
 	if (chain.FindBranch("NN_nparticles2"))
 		chain.SetBranchAddress("NN_nparticles2", &particles2);
 	else if (chain.FindBranch("NN_position_id_X_1")) {
@@ -69,7 +77,7 @@ int main(int argc, char *argv[])
 		particles2 = 0;
 	}
 
-	int particles3;
+	float particles3;
 	if (chain.FindBranch("NN_nparticles3"))
 		chain.SetBranchAddress("NN_nparticles3", &particles3);
 	else if (chain.FindBranch("NN_position_id_X_2")) {
@@ -80,17 +88,22 @@ int main(int argc, char *argv[])
 		particles3 = 0;
 	}
 
-	for (Long64_t j = 0; j < chain.GetEntries() && (c1 < n1 || c2 < n2 || c3 < n3); ++j) {
+	for (Long64_t j = skip; j < chain.GetEntries() && (c1 < n1 || c2 < n2 || c3 < n3 || c < n); ++j) {
 		chain.GetEntry(j);
-		if ((c1 < n1) && particles1) {
-			c1++;
+		if (n > 0) {
+			c++;
 			tree->Fill();
-		} else if ((c2 < n2) && particles2) {
-			c2++;
-			tree->Fill();
-		} else if ((c3 < n3) && particles3) {
-			c3++;
-			tree->Fill();
+		} else {
+			if ((c1 < n1) && particles1) {
+				c1++;
+				tree->Fill();
+			} else if ((c2 < n2) && particles2) {
+				c2++;
+				tree->Fill();
+			} else if ((c3 < n3) && particles3) {
+				c3++;
+				tree->Fill();
+			}
 		}
 	}
 
