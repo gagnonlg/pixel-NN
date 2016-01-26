@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
 	size_t n3,c3;
 	size_t n,c;
 	size_t skip = 0;
+	char *treename = "NNinput";
 
 	n1 = c1 = n2 = c2 = n3 = c3 = n = c = 0;
 
@@ -35,8 +36,11 @@ int main(int argc, char *argv[])
 		case 's':
 			skip = std::atoll(argv[i+1]);
 			break;
+		case 't':
+			treename = argv[i+1];
+			break;
 		default:
-			std::fprintf(stderr, "unrecognized argument\n");
+			std::fprintf(stderr, "unrecognized argument: %s\n", argv[i]);
 			return 1;
 		}
 	}
@@ -48,7 +52,7 @@ int main(int argc, char *argv[])
 
 	char *outname = argv[i++];
 
-	TChain chain("NNinput");
+	TChain chain(treename);
 	for (; i < argc; i++)
 		chain.Add(argv[i]);
 
