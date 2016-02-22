@@ -45,7 +45,7 @@ logging.info("searching for datasets")
 sampleHandler = ROOT.SH.SampleHandler()
 if args.driver == "direct":
     for d in args.scandirs:
-        ROOT.SH.scanDir(sampleHandler,d)
+        ROOT.SH.ScanDir().scan(sampleHandler,d)
 else:
     ROOT.SH.scanDQ2(sampleHandler, args.grid_input)
 sampleHandler.setMetaString('nc_tree', 'CollectionTree')
