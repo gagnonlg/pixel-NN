@@ -234,6 +234,12 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_nparticles3 = posX.size() == 3;
 
 		/* Sort and store the positions */
+		out_position_id_X_0 = 0;
+		out_position_id_Y_0 = 0;
+		out_position_id_X_1 = 0;
+		out_position_id_Y_1 = 0;
+		out_position_id_X_2 = 0;
+		out_position_id_Y_2 = 0;
 		Positions ps = sortedPositions(posX, posY);
 		if (NNtype >= POS1) {
 			out_position_id_X_0 = ps.at(0).first;
@@ -247,6 +253,13 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 			out_position_id_X_2 = ps.at(2).first;
 			out_position_id_Y_2 = ps.at(2).first;
 		}
+		if (std::isinf(out_position_id_X_0) ||
+		    std::isinf(out_position_id_Y_0) ||
+		    std::isinf(out_position_id_X_1) ||
+		    std::isinf(out_position_id_Y_1) ||
+		    std::isinf(out_position_id_X_2) ||
+		    std::isinf(out_position_id_Y_2))
+			continue;
 
 		/* Loop over angles */
 		for (size_t i = 0; i < theta.size(); i++) {
