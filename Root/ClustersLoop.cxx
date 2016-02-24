@@ -253,15 +253,15 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 			out_position_id_X_2 = ps.at(2).first;
 			out_position_id_Y_2 = ps.at(2).first;
 		}
-		if (std::isinf(out_position_id_X_0) ||
-		    std::isinf(out_position_id_Y_0) ||
-		    std::isinf(out_position_id_X_1) ||
-		    std::isinf(out_position_id_Y_1) ||
-		    std::isinf(out_position_id_X_2) ||
-		    std::isinf(out_position_id_Y_2))
+		if ((std::abs(out_position_id_X_0) > 5) ||
+		    (std::abs(out_position_id_Y_0) > 5) ||
+		    (std::abs(out_position_id_X_1) > 5) ||
+		    (std::abs(out_position_id_Y_1) > 5) ||
+		    (std::abs(out_position_id_X_2) > 5) ||
+		    (std::abs(out_position_id_Y_2) > 5))
 			continue;
 
-		/* Loop over angles */
+		    /* Loop over angles */
 		for (size_t i = 0; i < theta.size(); i++) {
 			out_theta = theta.at(i);
 			if (out_theta == 0 || std::isnan(out_theta))
