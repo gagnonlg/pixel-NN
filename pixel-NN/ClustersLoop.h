@@ -30,30 +30,30 @@ public:
 	TTree *outtree;  //!
 
 	// output variables
-	int out_RunNumber; //!
-	int out_EventNumber; //!
-	int out_ClusterNumber; //!
-	int out_sizeX; //!
-	int out_sizeY; //!
-	float out_localEtaPixelIndexWeightedPosition; //!
-	float out_localPhiPixelIndexWeightedPosition; //!
-	int out_layer; //!
-	int out_barrelEC; //!
-	int out_etaModule; //!
-	float out_phi; //!
-	float out_theta; //!
-	std::vector<float> out_matrix; //!
-	std::vector<float> out_pitches; //!
+	double out_RunNumber; //!
+	double out_EventNumber; //!
+	double out_ClusterNumber; //!
+	double out_sizeX; //!
+	double out_sizeY; //!
+	double out_localEtaPixelIndexWeightedPosition; //!
+	double out_localPhiPixelIndexWeightedPosition; //!
+	double out_layer; //!
+	double out_barrelEC; //!
+	double out_etaModule; //!
+	double out_phi; //!
+	double out_theta; //!
+	std::vector<double> out_matrix; //!
+	std::vector<double> out_pitches; //!
 
-	float out_nparticles1; //!
-	float out_nparticles2; //!
-	float out_nparticles3; //!
-	float out_position_id_X_0; //!
-	float out_position_id_Y_0; //!
-	float out_position_id_X_1; //!
-	float out_position_id_Y_1; //!
-	float out_position_id_X_2; //!
-	float out_position_id_Y_2; //!
+	double out_nparticles1; //!
+	double out_nparticles2; //!
+	double out_nparticles3; //!
+	double out_position_id_X_0; //!
+	double out_position_id_Y_0; //!
+	double out_position_id_X_1; //!
+	double out_position_id_Y_1; //!
+	double out_position_id_X_2; //!
+	double out_position_id_Y_2; //!
 
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails
