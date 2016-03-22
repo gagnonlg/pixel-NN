@@ -47,6 +47,9 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->Branch("NN_etaModule", &out_etaModule);
 	outtree->Branch("NN_phi", &out_phi);
 	outtree->Branch("NN_theta", &out_theta);
+	outtree->Branch("globalX", &out_globalX);
+	outtree->Branch("globalY", &out_globalY);
+	outtree->Branch("globalZ", &out_globalZ);
 
 	return EL::StatusCode::SUCCESS;
 }
@@ -67,7 +70,7 @@ EL::StatusCode ClustersLoop :: initialize ()
 	out_sizeY = cl->auxdata<int>("NN_sizeY");
 	out_matrix.resize(out_sizeX * out_sizeY);
 
-	float *matrixPtr = out_matrix.data();
+	double *matrixPtr = out_matrix.data();
 	char matrixbranch[strlen("NN_matrix???") + 1];
 	for (int i = 0; i < out_sizeX*out_sizeY; i++) {
 		std::sprintf(matrixbranch, "NN_matrix%d", i);
@@ -75,7 +78,7 @@ EL::StatusCode ClustersLoop :: initialize ()
 	}
 
 	out_pitches.resize(out_sizeY);
-	float *pitchesPtr = out_pitches.data();
+	double *pitchesPtr = out_pitches.data();
 	char pitchesbranch[strlen("NN_pitches???") + 1];
 	for (int i = 0; i < out_sizeY; i++) {
 		std::sprintf(pitchesbranch, "NN_pitches%d", i);
@@ -153,6 +156,9 @@ accessor(a_matrix, std::vector<float>, "NN_matrixOfCharge");
 accessor(a_pitches, std::vector<float>, "NN_vectorOfPitchesY");
 accessor(a_theta, std::vector<float>,  "NN_theta");
 accessor(a_phi, std::vector<float>,  "NN_phi");
+accessor(a_globalX, float, "globalX");
+accessor(a_globalY, float, "globalY");
+accessor(a_globalZ, float, "globalZ");
 
 #undef accessor
 
@@ -197,6 +203,9 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		std::vector<float> phi = a_phi(*c);
 		int sizeX = a_sizeX(*c);
 		int sizeY = a_sizeY(*c);
+		out_globalX = a_globalX(*c);
+		out_globalY = a_globalY(*c);
+		out_globalZ = a_globalZ(*c);
 
 		/* check if good cluster */
 		// matrix size

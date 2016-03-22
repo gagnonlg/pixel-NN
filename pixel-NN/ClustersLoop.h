@@ -42,6 +42,9 @@ public:
 	double out_etaModule; //!
 	double out_phi; //!
 	double out_theta; //!
+	double out_globalX; //!
+	double out_globalY; //!
+	double out_globalZ; //!
 	std::vector<double> out_matrix; //!
 	std::vector<double> out_pitches; //!
 
