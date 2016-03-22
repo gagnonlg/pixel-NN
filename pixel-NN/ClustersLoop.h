@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <TTree.h>
+#include <TVector3.h>
 #include <AthContainers/DataVector.h>
 #include <EventLoop/Algorithm.h>
 #include <xAODTracking/TrackMeasurementValidation.h>
@@ -45,6 +46,7 @@ public:
 	double out_globalX; //!
 	double out_globalY; //!
 	double out_globalZ; //!
+	double out_globalEta; //!
 	std::vector<double> out_matrix; //!
 	std::vector<double> out_pitches; //!
 

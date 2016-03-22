@@ -50,6 +50,7 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->Branch("globalX", &out_globalX);
 	outtree->Branch("globalY", &out_globalY);
 	outtree->Branch("globalZ", &out_globalZ);
+	outtree->Branch("globalEta", &out_globalEta);
 
 	return EL::StatusCode::SUCCESS;
 }
@@ -206,6 +207,7 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_globalX = a_globalX(*c);
 		out_globalY = a_globalY(*c);
 		out_globalZ = a_globalZ(*c);
+		out_globalEta = TVector3(out_globalX, out_globalY, out_globalZ).Eta();
 
 		/* check if good cluster */
 		// matrix size
