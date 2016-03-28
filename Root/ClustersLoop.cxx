@@ -186,7 +186,6 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 {
 	out_ClusterNumber = 0;
 	for (auto c : *clusters) {
-		out_ClusterNumber += 1;
 
 		/* fetch cluster observables */
 		const std::vector<float> matrix = a_matrix(*c);
@@ -282,6 +281,8 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 				out_theta *= -1;
 				out_phi   *= -1;
 			}
+
+			out_ClusterNumber += 1;
 			outtree->Fill();
 		}
 	}
