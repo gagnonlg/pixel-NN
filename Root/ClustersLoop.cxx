@@ -234,8 +234,12 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 			continue;
 
 		/* Fill charge matrix */
-		for (size_t i = 0; i < matrix.size(); i++)
-			out_matrix.at(i) = matrix.at(i);
+		for (size_t i = 0; i < matrix.size(); i++) {
+			double k = 1;
+			if (out_layer == 0 && out_barrelEC == 0)
+				k = scaleIBL;
+			out_matrix.at(i) = matrix.at(i) * k;
+		}
 
 		/* Fill vector of pitches */
 		for (size_t i = 0; i < pitches.size(); i++)

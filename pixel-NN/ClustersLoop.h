@@ -28,6 +28,7 @@ public:
 	std::string outputName;
 	int NNtype;
 	bool dilute;
+	double scaleIBL;
 
 	int fraction1; //!
 	int fraction2; //!

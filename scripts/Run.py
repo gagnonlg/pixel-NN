@@ -29,6 +29,7 @@ argp.add_argument("--nevents", type=int, default=None)
 argp.add_argument("--type",
                   choices=['number','pos1','pos2','pos3'],
                   default='number')
+argp.add_argument("--scale-ibl", default=False, action='store_true')
 argp.add_argument("--version", default=None, help="version id used when cannot use git")
 args = argp.parse_args()
 
@@ -70,6 +71,9 @@ clustersLoop.NNtype = {
 clustersLoop.dilute = args.type == 'number'
 if clustersLoop.dilute:
     logging.info('will dilute number of 1 and 2 particles clusters')
+
+clustersLoop.scaleIBL = 3 if args.scale_ibl else 1
+logging.info('IBL matrix scaling set to {}'.format(clustersLoop.scaleIBL))
 
 logging.info("creating input for %s neural network", args.type)
 job.algsAdd(clustersLoop)
