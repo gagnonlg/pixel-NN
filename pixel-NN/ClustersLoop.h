@@ -27,6 +27,10 @@ public:
 	// set in driver script
 	std::string outputName;
 	int NNtype;
+	bool dilute;
+
+	int fraction1; //!
+	int fraction2; //!
 
 	TTree *outtree;  //!
 

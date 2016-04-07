@@ -30,6 +30,9 @@ EL::StatusCode ClustersLoop :: setupJob (EL::Job& job)
 
 EL::StatusCode ClustersLoop :: histInitialize ()
 {
+	fraction1 = 0;
+	fraction2 = 0;
+
 	outtree = new TTree("NNinput", "NNinput");
 	outtree->SetDirectory(wk()->getOutputFile(outputName));
 
@@ -242,6 +245,16 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_nparticles1 = posX.size() == 1;
 		out_nparticles2 = posX.size() == 2;
 		out_nparticles3 = posX.size() == 3;
+
+		/* dilute 1 and 2p clusters if requested */
+		if (dilute) {
+			fraction1 += out_nparticles1;
+			fraction2 += out_nparticles2;
+			if (out_nparticles1 && ((fraction1 % 40) != 0))
+				continue;
+			if (out_nparticles2 && ((fraction2 % 2) != 0))
+				continue;
+		}
 
 		/* Sort and store the positions */
 		out_position_id_X_0 = 0;

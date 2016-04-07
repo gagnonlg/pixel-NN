@@ -66,6 +66,11 @@ clustersLoop.NNtype = {
     'pos2'   : 2,
     'pos3'   : 3
 }[args.type]
+
+clustersLoop.dilute = args.type == 'number'
+if clustersLoop.dilute:
+    logging.info('will dilute number of 1 and 2 particles clusters')
+
 logging.info("creating input for %s neural network", args.type)
 job.algsAdd(clustersLoop)
 
