@@ -68,7 +68,8 @@ clustersLoop.NNtype = {
     'pos3'   : 3
 }[args.type]
 
-clustersLoop.dilute = args.type == 'number'
+#clustersLoop.dilute = args.type == 'number'
+clustersLoop.dilute = False
 if clustersLoop.dilute:
     logging.info('will dilute number of 1 and 2 particles clusters')
 
