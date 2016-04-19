@@ -248,7 +248,7 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		/* Determine number of particles */
 		out_nparticles1 = posX.size() == 1;
 		out_nparticles2 = posX.size() == 2;
-		out_nparticles3 = posX.size() == 3;
+		out_nparticles3 = posX.size() >= 3;
 
 		/* dilute 1 and 2p clusters if requested */
 		if (dilute) {
