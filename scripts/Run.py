@@ -30,6 +30,7 @@ argp.add_argument("--type",
                   choices=['number','pos1','pos2','pos3'],
                   default='number')
 argp.add_argument("--scale-ibl", default=False, action='store_true')
+argp.add_argument("--dilute", default=False, action='store_true')
 argp.add_argument("--version", default=None, help="version id used when cannot use git")
 args = argp.parse_args()
 
@@ -69,7 +70,7 @@ clustersLoop.NNtype = {
 }[args.type]
 
 #clustersLoop.dilute = args.type == 'number'
-clustersLoop.dilute = False
+clustersLoop.dilute = args.dilute
 if clustersLoop.dilute:
     logging.info('will dilute number of 1 and 2 particles clusters')
 
