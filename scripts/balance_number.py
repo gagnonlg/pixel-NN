@@ -5,7 +5,7 @@ import subprocess
 p = argparse.ArgumentParser()
 p.add_argument('--ntrain', type=int, default=12000000)
 p.add_argument('--ntest', type=int, default=5000000)
-p.add_argument('--fractions', nargs='*', default=[22,26,52], type=int)
+p.add_argument('--fractions', nargs='*', default=[0.22,0.26,0.52], type=float)
 p.add_argument('--input', required=True)
 p.add_argument('--output', required=True)
 args = p.parse_args()
