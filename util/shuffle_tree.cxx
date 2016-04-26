@@ -38,15 +38,13 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	// https://root.cern.ch/phpBB3/viewtopic.php?f=3&t=14542&start=15#p62697
-	Int_t nread = tree->LoadBaskets(2328673567232LL);
-	//std::printf("nread: %d\n", nread);
-
 	TFile outfile(argv[3], "CREATE");
 	TTree *newtree = tree->CloneTree(0);
 
 	std::vector<Long64_t> indices = gen_range(0, tree->GetEntries());
 	shuffle(indices.begin(), indices.end(), std::default_random_engine(seed));
+
+	Int_t nread = tree->LoadBaskets(2328673567232LL);
 
 	for (Long64_t& i : indices) {
 		tree->GetEntry(i);
