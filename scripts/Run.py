@@ -32,6 +32,7 @@ argp.add_argument("--type",
 argp.add_argument("--scale-ibl", default=False, action='store_true')
 argp.add_argument("--dilute", default=False, action='store_true')
 argp.add_argument("--version", default=None, help="version id used when cannot use git")
+argp.add_argument("--doValidation", default=False, action='store_true')
 args = argp.parse_args()
 
 if version == "":
@@ -73,6 +74,10 @@ clustersLoop.NNtype = {
 clustersLoop.dilute = args.dilute
 if clustersLoop.dilute:
     logging.info('will dilute number of 1 and 2 particles clusters')
+
+clustersLoop.doValidation = args.doValidation
+if clustersLoop.doValidation:
+    logging.info('will produce set of validation histograms')
 
 clustersLoop.scaleIBL = 3 if args.scale_ibl else 1
 logging.info('IBL matrix scaling set to {}'.format(clustersLoop.scaleIBL))

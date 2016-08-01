@@ -14,6 +14,7 @@
 #include <xAODRootAccess/TEvent.h>
 #include <xAODTracking/TrackMeasurementValidation.h>
 #include <pixel-NN/ClustersLoop.h>
+#include <pixel-NN/ValidationHistograms.h>
 
 ClassImp(ClustersLoop)
 
@@ -54,6 +55,9 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->Branch("globalY", &out_globalY);
 	outtree->Branch("globalZ", &out_globalZ);
 	outtree->Branch("globalEta", &out_globalEta);
+
+	if (doValidation)
+		init_validation_histograms();
 
 	return EL::StatusCode::SUCCESS;
 }
@@ -301,8 +305,39 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 
 			out_ClusterNumber += 1;
 			outtree->Fill();
+
+			if (doValidation)
+				fill_validation_histograms();
+
 		}
 	}
+}
+
+void ClustersLoop::init_validation_histograms()
+{
+	for (std::string key : {"all", "ibl", "blayer", "barrel23", "endcap"}) {
+		validation_hists[key] = ValidationHistograms(key);
+		validation_hists.at(key).add_histograms_to_worker(wk());
+	}
+}
+
+void ClustersLoop::fill_validation_histograms()
+{
+	std::string key;
+
+	if (out_barrelEC == 0) {
+		if (out_layer == 0)
+			key = "ibl";
+		else if (out_layer == 1)
+			key = "blayer";
+		else
+			key = "barrel23";
+	} else {
+		key = "endcap";
+	}
+
+	validation_hists.at("all").fill_histograms(this);
+	validation_hists.at(key).fill_histograms(this);
 }
 
 /*-------------------- unneeded stuff -----------------------------------------*/

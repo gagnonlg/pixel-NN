@@ -1,6 +1,7 @@
 #ifndef pixel_NN_dataset_ClustersLoop_H
 #define pixel_NN_dataset_ClustersLoop_H
 
+#include <map>
 #include <string>
 #include <vector>
 #include <TTree.h>
@@ -8,6 +9,7 @@
 #include <AthContainers/DataVector.h>
 #include <EventLoop/Algorithm.h>
 #include <xAODTracking/TrackMeasurementValidation.h>
+#include <pixel-NN/ValidationHistograms.h>
 
 #define NUMBER  0
 #define POS1    1
@@ -20,7 +22,6 @@
 #define ERRORX3 8
 #define ERRORY3 9
 
-
 class ClustersLoop : public EL::Algorithm
 {
 public:
@@ -29,6 +30,7 @@ public:
 	int NNtype;
 	bool dilute;
 	double scaleIBL;
+	bool doValidation;
 
 	int fraction1; //!
 	int fraction2; //!
@@ -79,6 +81,11 @@ public:
 	virtual EL::StatusCode histFinalize ();
 
 	void clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>*);
+	void init_validation_histograms();
+	void fill_validation_histograms();
+
+	// validation histograms map
+	std::map<std::string, ValidationHistograms> validation_hists;
 
 	ClassDef(ClustersLoop, 1);
 };

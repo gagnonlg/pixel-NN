@@ -11,4 +11,5 @@
 
 #ifdef __CINT__
 #pragma link C++ class ClustersLoop+;
+#pragma link C++ class ValidationHistograms+;
 #endif
