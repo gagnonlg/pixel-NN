@@ -7,6 +7,9 @@ void ValidationHistograms::add_histograms_to_worker(EL::Worker *wk)
 	wk->addOutput(&h_total_charge);
 	wk->addOutput(&h_multiplicity);
 	wk->addOutput(&h_max_charge);
+	wk->addOutput(&h_matrix0_charge);
+	wk->addOutput(&h_matrix18_charge);
+	wk->addOutput(&h_matrix24_charge);
 }
 
 void ValidationHistograms::fill_histograms(ClustersLoop *data)
@@ -25,4 +28,9 @@ void ValidationHistograms::fill_histograms(ClustersLoop *data)
 
 	/* max charge */
 	h_max_charge.Fill(*std::max_element(data->out_matrix.begin(), data->out_matrix.end()));
+
+	/* individual pixels charge distribution */
+	h_matrix0_charge.Fill(data->out_matrix.at(0));
+	h_matrix18_charge.Fill(data->out_matrix.at(18));
+	h_matrix24_charge.Fill(data->out_matrix.at(24));
 }
