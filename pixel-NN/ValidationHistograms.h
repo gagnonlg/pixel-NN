@@ -22,10 +22,12 @@ static const char* hist_name(std::string prefix, std::string name)
 struct ValidationHistograms {
        ValidationHistograms(std::string name="")
 	:
-        HIST1(total_charge, name, 1000, 0, 5e6)
+        HIST1(total_charge, name, 1000, 0, 5e6),
+	HIST1(multiplicity, name, 7*7+1, 0, 7*7+2)
 	{};
 
 	TH1D h_total_charge;
+	TH1D h_multiplicity;
 
 	void add_histograms_to_worker(EL::Worker *wk);
 	void fill_histograms(ClustersLoop *data);
