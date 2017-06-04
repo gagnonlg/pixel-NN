@@ -1,6 +1,6 @@
 atlas_subdir(pixel-NN)
 
-find_package(ROOT COMPONENTS MathCore RIO Core Tree Hist)
+find_package(ROOT COMPONENTS MathCore RIO Core Tree Hist Matrix)
 
 atlas_depends_on_subdirs(
   PUBLIC
