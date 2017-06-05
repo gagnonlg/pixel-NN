@@ -146,6 +146,7 @@ void ValidationLoop::Loop()
 		Output_true_positions->clear();
 		Output_uncertainty_X->clear();
 		Output_uncertainty_Y->clear();
+		continue;
 	}
 
 
@@ -164,6 +165,34 @@ void ValidationLoop::Loop()
 				       NN_localEtaPixelIndexWeightedPosition,
 				       NN_sizeY,
 				       pitches);
+
+	NNinput.insert(NNinput.end(), pos_output.begin(), pos_output.end());
+	std::vector<double> errorx_output;
+	std::vector<double> errory_output;
+	int np;
+	if (NN_nparticles1 == 1) {
+		errorx_output = NN_error1x->calculateNormalized(NNinput);
+		errory_output = NN_error1y->calculateNormalized(NNinput);
+		np = 1;
+	} else if (NN_nparticles2 == 1) {
+		errorx_output = NN_error2x->calculateNormalized(NNinput);
+		errory_output = NN_error2y->calculateNormalized(NNinput);
+		np = 2;
+	} else if (NN_nparticles3 == 3) {
+		errorx_output = NN_error3x->calculateNormalized(NNinput);
+		errory_output = NN_error3y->calculateNormalized(NNinput);
+		np = 3;
+	}
+
+	*Output_uncertainty_X =
+		PixelNN::hit_position_uncertainty(errorx_output,
+						    PixelNN::Direction::X,
+						    np);
+
+	*Output_uncertainty_Y =
+		PixelNN::hit_position_uncertainty(errory_output,
+						  PixelNN::Direction::Y,
+						  np);
 
 	new_tree->Fill();
     }

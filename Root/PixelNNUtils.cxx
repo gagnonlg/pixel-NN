@@ -1,3 +1,4 @@
+#include <cmath>
 #include <stdexcept>
 #include <pixel-NN/PixelNNUtils.h>
 
@@ -95,4 +96,55 @@ PixelNN::correctedY(double center_pos,
 	p_actual += pitches.at(i);
     }
     return center_pos + p_Y - p_center;
+}
+
+std::vector<double>
+PixelNN::hit_position_uncertainty(std::vector<double>& nn_output,
+				  Direction d,
+				  int nparticles)
+{
+    std::vector<double> output_rms;
+
+    if (nparticles < 1 || nparticles > 3)
+	throw "nparticles < 0 || nparticles > 3";
+
+    double maximum;
+    if (d == Direction::X)
+	maximum = (nparticles == 1)? 0.03 : 0.05;
+    else
+	maximum = (nparticles == 1)? 0.3 : 0.4;
+
+    double minimum = -maximum;
+    int dist_size = (int)nn_output.size() / nparticles;
+
+    for (int i = 0; i < nparticles; i++)
+    {
+	double acc = 0;
+	for (int u = 0; u < dist_size; u++)
+	    acc += nn_output[i * dist_size + u];
+	double rms = 0;
+	for (int u = 0; u < dist_size; u++) {
+	    rms += nn_output[i * dist_size + u] / acc * std::pow(minimum + (maximum - minimum)/(double)(dist_size - 2) * (u - 1./2.), 2);
+	}
+	rms = sqrt(rms);
+
+	//now recompute between -3*RMSx and +3*RMSx
+	double interval = 3 * rms;
+
+	int min_bin = (int)(1+ (-interval - minimum) / (maximum - minimum) * (double)(dist_size - 2));
+	int max_bin = (int)(1 +( interval - minimum) / (maximum - minimum) * (double)(dist_size - 2));
+
+	if (max_bin > dist_size - 1)
+	    max_bin = dist_size - 1;
+	if (min_bin < 0)
+	    min_bin = 0;
+
+	rms = 0;
+	for (int u = min_bin; u < max_bin + 1; u++)
+	    rms += nn_output[i * dist_size + u] / acc * std::pow(minimum + (maximum - minimum)/(double)(dist_size - 2) * (u - 1./2.), 2);
+
+	rms = sqrt(rms);
+	output_rms.push_back(rms);
+    }
+    return output_rms;
 }

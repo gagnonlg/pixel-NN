@@ -40,7 +40,9 @@ namespace PixelNN {
 	       double size_Y,
 	       std::vector<double>& pitches);
 
-    double
-    hit_position_uncertainty(std::vector<double>& nn_output, Direction d);
+    std::vector<double>
+    hit_position_uncertainty(std::vector<double>& nn_output,
+			     Direction d,
+			     int nparticles);
 }
 
