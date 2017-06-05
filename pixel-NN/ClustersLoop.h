@@ -31,6 +31,7 @@ public:
 	bool dilute;
 	double scaleIBL;
 	bool doValidation;
+	bool inclusive;
 
 	int fraction1; //!
 	int fraction2; //!
@@ -60,6 +61,7 @@ public:
 	double out_nparticles1; //!
 	double out_nparticles2; //!
 	double out_nparticles3; //!
+	double out_nparticles_excess; //!
 	double out_position_id_X_0; //!
 	double out_position_id_Y_0; //!
 	double out_position_id_X_1; //!

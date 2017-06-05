@@ -93,29 +93,29 @@ EL::StatusCode ClustersLoop :: initialize ()
 		outtree->Branch(pitchesbranch, pitchesPtr + i);
 	}
 
-	if (NNtype == NUMBER) {
+	if (inclusive || NNtype == NUMBER) {
 		outtree->Branch("NN_nparticles1", &out_nparticles1);
 		outtree->Branch("NN_nparticles2", &out_nparticles2);
 		outtree->Branch("NN_nparticles3", &out_nparticles3);
-	} else if (NNtype < ERRORX1) {
-		if (NNtype >= POS1) {
-			outtree->Branch("NN_position_id_X_0",
-					&out_position_id_X_0);
-			outtree->Branch("NN_position_id_Y_0",
-					&out_position_id_Y_0);
-		}
-		if (NNtype >= POS2) {
-			outtree->Branch("NN_position_id_X_1",
-					&out_position_id_X_1);
-			outtree->Branch("NN_position_id_Y_1",
-					&out_position_id_Y_1);
-		}
-		if (NNtype >= POS3) {
-			outtree->Branch("NN_position_id_X_2",
-					&out_position_id_X_2);
-			outtree->Branch("NN_position_id_Y_2",
-					&out_position_id_Y_2);
-		}
+		outtree->Branch("NN_nparticles_excess", &out_nparticles_excess);
+	}
+	if (inclusive || (NNtype >= POS1 && NNtype <= POS3)) {
+	    outtree->Branch("NN_position_id_X_0",
+			    &out_position_id_X_0);
+	    outtree->Branch("NN_position_id_Y_0",
+			    &out_position_id_Y_0);
+	}
+	if (inclusive || (NNtype >= POS2 && NNtype <= POS3)) {
+	    outtree->Branch("NN_position_id_X_1",
+			    &out_position_id_X_1);
+	    outtree->Branch("NN_position_id_Y_1",
+			    &out_position_id_Y_1);
+	}
+	if (inclusive || NNtype == POS3) {
+	    outtree->Branch("NN_position_id_X_2",
+			    &out_position_id_X_2);
+	    outtree->Branch("NN_position_id_Y_2",
+			    &out_position_id_Y_2);
 	}
 
 	return EL::StatusCode::SUCCESS;
@@ -229,10 +229,12 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		// nparticles
 		if (posX.size() == 0)
 			continue;
-		if ((NNtype == POS1 && posX.size() != 1) ||
-		    (NNtype == POS2 && posX.size() != 2) ||
-		    (NNtype == POS3 && posX.size() != 3))
+		if (!inclusive) {
+		    if ((NNtype == POS1 && posX.size() != 1) ||
+			(NNtype == POS2 && posX.size() != 2) ||
+			(NNtype == POS3 && posX.size() != 3))
 			continue;
+		}
 		// BEC
 		if (abs(out_barrelEC > 2))
 			continue;
@@ -253,6 +255,7 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_nparticles1 = posX.size() == 1;
 		out_nparticles2 = posX.size() == 2;
 		out_nparticles3 = posX.size() >= 3;
+		out_nparticles_excess = posX.size() > 3;
 
 		/* dilute 1 and 2p clusters if requested */
 		if (dilute) {
@@ -272,15 +275,15 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_position_id_X_2 = 0;
 		out_position_id_Y_2 = 0;
 		Positions ps = sortedPositions(posX, posY);
-		if (NNtype >= POS1) {
+		if (ps.size() >= 1) {
 			out_position_id_X_0 = ps.at(0).first;
 			out_position_id_Y_0 = ps.at(0).second;
 		}
-		if (NNtype >= POS2) {
+		if (ps.size() >= 2) {
 			out_position_id_X_1 = ps.at(1).first;
 			out_position_id_Y_1 = ps.at(1).second;
 		}
-		if (NNtype >= POS3) {
+		if (ps.size() >= 3) {
 			out_position_id_X_2 = ps.at(2).first;
 			out_position_id_Y_2 = ps.at(2).first;
 		}
