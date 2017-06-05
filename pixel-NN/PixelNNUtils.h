@@ -25,7 +25,20 @@ namespace PixelNN {
 		    double threshold_3p = 0.2);
 
     std::vector<double>
-    hit_positions(std::vector<double>& nn_output); // TODO: other parameters
+    hit_positions(std::vector<double>& nn_output,
+		  double center_pos_X,
+		  double center_pos_Y,
+		  double size_Y,
+		  std::vector<double>& pitches_Y);
+
+    double
+    correctedX(double center_pos, double pos_pixel);
+
+    double
+    correctedY(double center_pos,
+	       double pos_pixels,
+	       double size_Y,
+	       std::vector<double>& pitches);
 
     double
     hit_position_uncertainty(std::vector<double>& nn_output, Direction d);

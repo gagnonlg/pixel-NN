@@ -1,5 +1,6 @@
 #include <pixel-NN/ClustersLoop.h>
 #include <pixel-NN/TTrainedNetwork.h>
+#include <pixel-NN/ValidationLoop.h>
 
 #ifdef __CINT__
 
@@ -14,4 +15,5 @@
 #pragma link C++ class ClustersLoop+;
 #pragma link C++ class ValidationHistograms+;
 #pragma link C++ class TTrainedNetwork+;
+#pragma link C++ class ValidationLoop+;
 #endif

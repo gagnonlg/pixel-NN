@@ -6,9 +6,9 @@ void
 PixelNN::normalize_inplace(std::vector<double>& dvec)
 {
     double acc = 0;
-    for (double d : dvec):
+    for (double d : dvec)
 	acc += d;
-    for (double &d : dvec):
+    for (double &d : dvec)
 	d /= acc;
 }
 
@@ -45,4 +45,54 @@ PixelNN::estimate_number(std::pair<double,double>& probs,
 	return 2;
     else
 	return 1;
+}
+
+std::vector<double>
+PixelNN::hit_positions(std::vector<double>& nn_output,
+		       double center_pos_X,
+		       double center_pos_Y,
+		       double size_Y,
+		       std::vector<double>& pitches_Y)
+{
+    std::vector<double> corrected(nn_output.size());
+    for (size_t i = 0; i < nn_output.size() / 2; i += 2) {
+	corrected.at(i) = correctedX(nn_output.at(i), center_pos_X);
+	corrected.at(i + 1) = correctedY(nn_output.at(i + 1),
+					 center_pos_Y,
+					 size_Y,
+					 pitches_Y);
+
+    }
+
+    return corrected;
+}
+
+double
+PixelNN::correctedX(double center_pos,
+		    double pos_pixels)
+{
+  double pitch = 0.05;
+  return center_pos + pos_pixels * pitch;
+}
+
+
+double
+PixelNN::correctedY(double center_pos,
+		    double pos_pixels,
+		    double size_Y,
+		    std::vector<double>& pitches)
+{
+    double p = pos_pixels + (size_Y - 1) / 2.0;
+    double p_Y = -100;
+    double p_center = -100;
+    double p_actual = 0;
+
+    for (int i = 0; i < size_Y; i++) {
+	if (p >= i && p <= (i + 1))
+	    p_Y = p_actual + (p - i + 0.5) * pitches.at(i);
+	if (i == ((int)size_Y - 1) / 2)
+	    p_center = p_actual + 0.5 * pitches.at(i);
+	p_actual += pitches.at(i);
+    }
+    return center_pos + p_Y - p_center;
 }
