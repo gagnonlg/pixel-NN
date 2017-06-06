@@ -35,3 +35,4 @@ atlas_add_library(pixel-NN-Lib
 	EventLoop
 )
 		
+atlas_install_python_modules(python/*.py)
