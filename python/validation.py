@@ -35,6 +35,8 @@ def gen_hists_triplets():
         name = name.replace('residuals', 'pull')
         var = '(' + var + ')' + '/' + get_uncert_var(name)
         yield name, var, cond
+    for trp in gen_var_triplets():
+        yield trp
 
 def get_uncert_var(name):
     var = 'Output_uncertainty_'
@@ -69,6 +71,51 @@ def gen_res_triplets():
 
         var = 'Output_estimated_positions[%d] - Output_true_positions[%d]' % \
               (idx, idx)
+
+        if lcond == '':
+            cond = ncond
+        else:
+            cond = '({})&&({})'.format(lcond, ncond)
+
+        yield name, var, cond
+
+def gen_var_triplets():
+    name = 'h_residuals'
+    dirs = ['X', 'Y']
+    layers = [
+        ('all', ''),
+        ('ibl', 'NN_layer==0 && NN_barrelEC==0'),
+        ('barrel', 'NN_layer>0 && NN_barrelEC==0'),
+        ('endcaps', 'NN_barrelEC!=0')
+    ]
+
+    vars = [
+        'estimated_positions_raw',
+        'estimated_positions',
+        'true_positions_raw',
+        'true_positions',
+        'uncertainty'
+    ]
+
+    mult = [
+        (1, 'NN_nparticles1==1'),
+        (2, 'NN_nparticles2==1'),
+        (3, '(NN_nparticles3==1) && (NN_nparticles_excess==0)')
+    ]
+
+    iter = itertools.product(vars, dirs, layers, mult)
+
+    for v, d, (lname, lcond), (npart, ncond) in iter:
+
+        idx = 2 * (npart - 1) + int(d == 'Y')
+
+        name = '{}_{}_{}_{}'.format(v, d, npart, lname)
+
+        if v == 'uncertainty':
+            idx = npart - 1
+            v = v + '_' + d
+
+        var = 'Output_%s[%d]' % (v, idx)
 
         if lcond == '':
             cond = ncond

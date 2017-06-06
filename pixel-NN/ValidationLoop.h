@@ -230,7 +230,9 @@ public :
     double Output_nparticles2;
     double Output_nparticles3;
 
+    std::vector<double> *Output_estimated_positions_raw;
     std::vector<double> *Output_estimated_positions;
+    std::vector<double> *Output_true_positions_raw;
     std::vector<double> *Output_true_positions;
     std::vector<double> *Output_uncertainty_X;
     std::vector<double> *Output_uncertainty_Y;
@@ -272,7 +274,9 @@ ValidationLoop::ValidationLoop(const char *input_path,
 	!NN_error3x || !NN_error3y)
 	throw "Missing NN";
 
+    Output_estimated_positions_raw = new std::vector<double>();
     Output_estimated_positions = new std::vector<double>();
+    Output_true_positions_raw = new std::vector<double>();
     Output_true_positions = new std::vector<double>();
     Output_uncertainty_X = new std::vector<double>();
     Output_uncertainty_Y = new std::vector<double>();
@@ -284,7 +288,10 @@ ValidationLoop::ValidationLoop(const char *input_path,
     new_tree->Branch("Output_nparticles", &Output_nparticles);
     new_tree->Branch("Output_nparticles1", &Output_nparticles1);
     new_tree->Branch("Output_nparticles2", &Output_nparticles2);
+    new_tree->Branch("Output_estimated_positions_raw",
+		     &Output_estimated_positions_raw);
     new_tree->Branch("Output_estimated_positions", &Output_estimated_positions);
+    new_tree->Branch("Output_true_positions_raw", &Output_true_positions_raw);
     new_tree->Branch("Output_true_positions", &Output_true_positions);
     new_tree->Branch("Output_uncertainty_X", &Output_uncertainty_X);
     new_tree->Branch("Output_uncertainty_Y", &Output_uncertainty_Y);

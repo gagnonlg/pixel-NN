@@ -148,6 +148,7 @@ void ValidationLoop::Loop()
 		Output_uncertainty_Y->clear();
 		continue;
 	}
+	*Output_estimated_positions_raw = pos_output;
 
 
 	std::vector<double> pitches = collect_pitches_Y();
@@ -159,6 +160,7 @@ void ValidationLoop::Loop()
 				       pitches);
 
 	std::vector<double> true_pos = collect_positions();
+	*Output_true_positions_raw = true_pos;
 	*Output_true_positions =
 		PixelNN::hit_positions(true_pos,
 				       NN_localPhiPixelIndexWeightedPosition,
