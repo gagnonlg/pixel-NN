@@ -180,7 +180,7 @@ void ValidationLoop::Loop()
 		errorx_output = NN_error2x->calculateNormalized(NNinput);
 		errory_output = NN_error2y->calculateNormalized(NNinput);
 		np = 2;
-	} else if (NN_nparticles3 == 3) {
+	} else if (NN_nparticles3 == 1) {
 		errorx_output = NN_error3x->calculateNormalized(NNinput);
 		errory_output = NN_error3y->calculateNormalized(NNinput);
 		np = 3;
