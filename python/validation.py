@@ -31,6 +31,7 @@ def hist(ttree, name, var, cond):
 def gen_hists_triplets():
     for name, var, cond in gen_res_triplets():
         yield name, var , cond
+    for name, var, cond in gen_res_triplets():
         name = name.replace('residuals', 'pull')
         var = '(' + var + ')' + '/' + get_uncert_var(name)
         yield name, var, cond
