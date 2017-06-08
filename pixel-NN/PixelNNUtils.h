@@ -44,5 +44,9 @@ namespace PixelNN {
     hit_position_uncertainty(std::vector<double>& nn_output,
 			     Direction d,
 			     int nparticles);
+
+    int cluster_size(std::vector<double> &charge);
+    int cluster_size_X(std::vector<double> &charges, int sizeX, int sizeY);
+    int cluster_size_Y(std::vector<double> &charges, int sizeX, int sizeY);
 }
 

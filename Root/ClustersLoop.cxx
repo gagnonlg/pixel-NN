@@ -14,6 +14,7 @@
 #include <xAODRootAccess/TEvent.h>
 #include <xAODTracking/TrackMeasurementValidation.h>
 #include <pixel-NN/ClustersLoop.h>
+#include <pixel-NN/PixelNNUtils.h>
 #include <pixel-NN/ValidationHistograms.h>
 
 ClassImp(ClustersLoop)
@@ -55,6 +56,10 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 	outtree->Branch("globalY", &out_globalY);
 	outtree->Branch("globalZ", &out_globalZ);
 	outtree->Branch("globalEta", &out_globalEta);
+	outtree->Branch("globalPhi", &out_globalPhi);
+	outtree->Branch("cluster_size", &out_cluster_size);
+	outtree->Branch("cluster_size_X", &out_cluster_size_X);
+	outtree->Branch("cluster_size_Y", &out_cluster_size_Y);
 
 	if (doValidation)
 		init_validation_histograms();
@@ -117,6 +122,9 @@ EL::StatusCode ClustersLoop :: initialize ()
 	    outtree->Branch("NN_position_id_Y_2",
 			    &out_position_id_Y_2);
 	}
+
+	if (has_evaluated_NN_info(*cl))
+		branch_evaluated_NN_info();
 
 	return EL::StatusCode::SUCCESS;
 }
@@ -213,7 +221,17 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 		out_globalX = a_globalX(*c);
 		out_globalY = a_globalY(*c);
 		out_globalZ = a_globalZ(*c);
-		out_globalEta = TVector3(out_globalX, out_globalY, out_globalZ).Eta();
+		out_globalEta =
+			TVector3(out_globalX, out_globalY, out_globalZ).Eta();
+		out_globalPhi =
+			TVector3(out_globalX, out_globalY, out_globalZ).Phi();
+		out_cluster_size = PixelNN::cluster_size(out_matrix);
+		out_cluster_size_X = PixelNN::cluster_size_X(out_matrix,
+							     out_sizeX,
+							     out_sizeY);
+		out_cluster_size_Y = PixelNN::cluster_size_Y(out_matrix,
+							     out_sizeX,
+							     out_sizeY);
 
 		/* check if good cluster */
 		// matrix size
@@ -306,6 +324,9 @@ void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidatio
 				out_phi   *= -1;
 			}
 
+			if (has_evaluated_NN_info(*c))
+				fill_evaluated_NN_info(*c, i);
+
 			out_ClusterNumber += 1;
 			outtree->Fill();
 
@@ -342,6 +363,50 @@ void ClustersLoop::fill_validation_histograms()
 	validation_hists.at("all").fill_histograms(this);
 	validation_hists.at(key).fill_histograms(this);
 }
+
+bool
+ClustersLoop::has_evaluated_NN_info(const xAOD::TrackMeasurementValidation& c)
+{
+	return c.isAvailable<std::vector<std::vector<double>>>("Output_number");
+}
+
+void
+ClustersLoop::branch_evaluated_NN_info()
+{
+	outtree->Branch("Output_number", &Output_number);
+	outtree->Branch("Output_number_estimated", &Output_number_estimated);
+	outtree->Branch("Output_number_true", &Output_number_true);
+	outtree->Branch("Output_positions_X", &Output_positions_X);
+	outtree->Branch("Output_positions_Y", &Output_positions_Y);
+	outtree->Branch("Output_uncert_X", &Output_uncert_X);
+	outtree->Branch("Output_uncert_Y", &Output_uncert_Y);
+	outtree->Branch("Output_true_X", &Output_true_X);
+	outtree->Branch("Output_true_Y", &Output_true_Y);
+}
+
+#define GET_VV(n) Output_ ## n =					\
+		cluster.auxdata<std::vector<std::vector<double>>>	\
+		("Output_" #n).at(i)
+
+void ClustersLoop::fill_evaluated_NN_info(const Cluster& cluster, size_t i)
+{
+
+	GET_VV(number);
+	PixelNN::normalize_inplace(Output_number);
+	Output_number_estimated = PixelNN::estimate_number(Output_number);
+
+	GET_VV(positions_X);
+	GET_VV(positions_Y);
+	GET_VV(uncert_X);
+	GET_VV(uncert_Y);
+	GET_VV(true_X);
+	GET_VV(true_Y);
+
+	Output_number_true = Output_true_X.size();
+}
+
+#undef GET_VV
+
 
 /*-------------------- unneeded stuff -----------------------------------------*/
 

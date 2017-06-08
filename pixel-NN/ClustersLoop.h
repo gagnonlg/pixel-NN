@@ -22,6 +22,8 @@
 #define ERRORX3 8
 #define ERRORY3 9
 
+typedef xAOD::TrackMeasurementValidation Cluster;
+
 class ClustersLoop : public EL::Algorithm
 {
 public:
@@ -55,8 +57,12 @@ public:
 	double out_globalY; //!
 	double out_globalZ; //!
 	double out_globalEta; //!
+	double out_globalPhi; //!
 	std::vector<double> out_matrix; //!
 	std::vector<double> out_pitches; //!
+	double out_cluster_size; //!
+	double out_cluster_size_X; //!
+	double out_cluster_size_Y; //!
 
 	double out_nparticles1; //!
 	double out_nparticles2; //!
@@ -68,6 +74,16 @@ public:
 	double out_position_id_Y_1; //!
 	double out_position_id_X_2; //!
 	double out_position_id_Y_2; //!
+
+	std::vector<double> Output_number; //!
+	double Output_number_estimated; //!
+	double Output_number_true; //!
+	std::vector<double> Output_positions_X; //!
+	std::vector<double> Output_positions_Y; //!
+	std::vector<double> Output_uncert_X; //!
+	std::vector<double> Output_uncert_Y; //!
+	std::vector<double> Output_true_X; //!
+	std::vector<double> Output_true_Y; //!
 
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails
@@ -85,6 +101,12 @@ public:
 	void clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>*);
 	void init_validation_histograms();
 	void fill_validation_histograms();
+
+	bool
+	has_evaluated_NN_info(const Cluster& cluster);
+
+	void branch_evaluated_NN_info();
+	void fill_evaluated_NN_info(const Cluster& cluster, size_t i);
 
 	// validation histograms map
 	std::map<std::string, ValidationHistograms> validation_hists;

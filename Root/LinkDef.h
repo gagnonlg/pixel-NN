@@ -16,4 +16,5 @@
 #pragma link C++ class ValidationHistograms+;
 #pragma link C++ class TTrainedNetwork+;
 #pragma link C++ class ValidationLoop+;
+#pragma link C++ class std::vector<std::vector<std::vector<double> > >;
 #endif

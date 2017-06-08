@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <pixel-NN/PixelNNUtils.h>
@@ -148,4 +149,52 @@ PixelNN::hit_position_uncertainty(std::vector<double>& nn_output,
 	output_rms.push_back(rms);
     }
     return output_rms;
+}
+
+int PixelNN::cluster_size(std::vector<double> &charges)
+{
+	int acc = 0;
+	for (double c: charges)
+		acc += (c > 0);
+	return acc;
+}
+
+int PixelNN::cluster_size_X(std::vector<double> &charges, int sizeX, int sizeY)
+{
+	std::vector<int> non_empty;
+	for (int x = 0; x < sizeX; x++) {
+		bool has_charge = false;
+		for (int y = 0; y < sizeY; y++) {
+			if (charges.at(x * sizeX + y) > 0) {
+				has_charge = true;
+				break;
+			}
+		}
+		if (has_charge)
+			non_empty.push_back(x);
+	}
+	if (non_empty.size() == 0)
+		return 0;
+	auto minmax = std::minmax_element(non_empty.begin(), non_empty.end());
+	return minmax.second - minmax.first + 1;
+}
+
+int PixelNN::cluster_size_Y(std::vector<double> &charges, int sizeX, int sizeY)
+{
+	std::vector<int> non_empty;
+	for (int y = 0; y < sizeY; y++) {
+		bool has_charge = false;
+		for (int x = 0; x < sizeX; x++) {
+			if (charges.at(x * sizeX + y) > 0) {
+				has_charge = true;
+				break;
+			}
+		}
+		if (has_charge)
+			non_empty.push_back(y);
+	}
+	if (non_empty.size() == 0)
+		return 0;
+	auto minmax = std::minmax_element(non_empty.begin(), non_empty.end());
+	return minmax.second - minmax.first + 1;
 }
