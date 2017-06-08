@@ -71,14 +71,14 @@ EL::StatusCode ClustersLoop :: initialize ()
 {
 	xAOD::TEvent* event = wk()->xaodEvent();
 
-	const DataVector<xAOD::TrackMeasurementValidation> *clusters;
+	const DataVector<Cluster> *clusters;
 	xAOD::TReturnCode rc = event->retrieve(clusters, "PixelClusters");
 	if (! rc.isSuccess()) {
 		Error("Initialize()", "Failed to retrieve PixelClusters");
 		return EL::StatusCode::FAILURE;
 	}
 
-	const xAOD::TrackMeasurementValidation *cl = clusters->at(0);
+	const Cluster *cl = clusters->at(0);
 	out_sizeX = cl->auxdata<int>("NN_sizeX");
 	out_sizeY = cl->auxdata<int>("NN_sizeY");
 	out_matrix.resize(out_sizeX * out_sizeY);
@@ -143,7 +143,7 @@ EL::StatusCode ClustersLoop :: execute ()
 	out_RunNumber = eventInfo->runNumber();
 	out_EventNumber = eventInfo->eventNumber();
 
-	const DataVector<xAOD::TrackMeasurementValidation> *clusters;
+	const DataVector<Cluster> *clusters;
 	rc = event->retrieve(clusters, "PixelClusters");
 	if (! rc.isSuccess()) {
 		Error("Initialize()", "Failed to retrieve PixelClusters");
@@ -197,7 +197,7 @@ Positions sortedPositions(std::vector<float>& xs, std::vector<float>& ys)
 	return ps;
 }
 
-void ClustersLoop::clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>* clusters)
+void ClustersLoop::clustersLoop(const DataVector<Cluster>* clusters)
 {
 	out_ClusterNumber = 0;
 	for (auto c : *clusters) {
@@ -365,7 +365,7 @@ void ClustersLoop::fill_validation_histograms()
 }
 
 bool
-ClustersLoop::has_evaluated_NN_info(const xAOD::TrackMeasurementValidation& c)
+ClustersLoop::has_evaluated_NN_info(const Cluster& c)
 {
 	return c.isAvailable<std::vector<std::vector<double>>>("Output_number");
 }

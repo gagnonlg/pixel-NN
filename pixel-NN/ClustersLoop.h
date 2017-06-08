@@ -98,7 +98,7 @@ public:
 	virtual EL::StatusCode finalize ();
 	virtual EL::StatusCode histFinalize ();
 
-	void clustersLoop(const DataVector<xAOD::TrackMeasurementValidation>*);
+	void clustersLoop(const DataVector<Cluster>*);
 	void init_validation_histograms();
 	void fill_validation_histograms();
 
