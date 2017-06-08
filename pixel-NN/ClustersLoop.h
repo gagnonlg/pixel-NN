@@ -84,6 +84,12 @@ public:
 	std::vector<double> Output_uncert_Y; //!
 	std::vector<double> Output_true_X; //!
 	std::vector<double> Output_true_Y; //!
+	std::vector<double> Output_corr_positions_X; //!
+	std::vector<double> Output_corr_positions_Y; //!
+	std::vector<double> Output_corr_uncert_X; //!
+	std::vector<double> Output_corr_uncert_Y; //!
+	std::vector<double> Output_corr_true_X; //!
+	std::vector<double> Output_corr_true_Y; //!
 
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails

@@ -382,6 +382,12 @@ ClustersLoop::branch_evaluated_NN_info()
 	outtree->Branch("Output_uncert_Y", &Output_uncert_Y);
 	outtree->Branch("Output_true_X", &Output_true_X);
 	outtree->Branch("Output_true_Y", &Output_true_Y);
+	outtree->Branch("Output_corr_positions_X", &Output_corr_positions_X);
+	outtree->Branch("Output_corr_positions_Y", &Output_corr_positions_Y);
+	outtree->Branch("Output_corr_uncert_X", &Output_corr_uncert_X);
+	outtree->Branch("Output_corr_uncert_Y", &Output_corr_uncert_Y);
+	outtree->Branch("Output_corr_true_X", &Output_corr_true_X);
+	outtree->Branch("Output_corr_true_Y", &Output_corr_true_Y);
 }
 
 #define GET_VV(n) Output_ ## n =					\
@@ -401,6 +407,12 @@ void ClustersLoop::fill_evaluated_NN_info(const Cluster& cluster, size_t i)
 	GET_VV(uncert_Y);
 	GET_VV(true_X);
 	GET_VV(true_Y);
+	GET_VV(corr_positions_X);
+	GET_VV(corr_positions_Y);
+	GET_VV(corr_uncert_X);
+	GET_VV(corr_uncert_Y);
+	GET_VV(corr_true_X);
+	GET_VV(corr_true_Y);
 
 	Output_number_true = Output_true_X.size();
 }
