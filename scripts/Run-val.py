@@ -52,13 +52,8 @@ driver.submitOnly(job, "submitDir")
 import glob
 
 input_path = glob.glob("submitDir/data-NNinput/*.root")[0]
-print input_path
-NN_path = "/afs/cern.ch/user/l/lgagnon/private/NN_note/run/PixelNN_TTrainedNetworks.root"
 output_path = "test.root"
-
-vloop = ROOT.ValidationLoop(input_path, NN_path, output_path);
-vloop.Loop()
 
 import importlib
 validation = importlib.import_module('.validation', 'pixel-NN')
-validation.make_histograms(output_path, 'hists_test.root')
+validation.make_histograms(input_path, output_path)

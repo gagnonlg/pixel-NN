@@ -1,125 +1,60 @@
 import itertools
-import re
 import ROOT
 
 ROOT.gROOT.SetBatch(True)
 
+templates = [
+    ('residuals_{n}_{d}', '(Output_positions_{d}[{i}] - Output_true_{d}[{i}])'),
+    ('pull_{n}_{d}', '(Output_positions_{d}[{i}] - Output_true_{d}[{i}])/Output_uncert_{d}[{i}]'),
+    ('corr_residuals_{n}_{d}', '(Output_corr_positions_{d}[{i}] - Output_corr_true_{d}[{i}])'),
+    ('corr_pull_{n}_{d}', '(Output_corr_positions_{d}[{i}] - Output_corr_true_{d}[{i}])/Output_corr_uncert_{d}[{i}]')
+]
+
+numbers = [1, 2, 3]
+directions = ['X', 'Y']
+layers = [
+    ('all', None),
+    ('ibl', '((NN_layer==0)&&(NN_barrelEC==0))'),
+    ('barrel', '((NN_layer>0)&&(NN_barrelEC==0))'),
+    ('endcap', '(NN_barrelEC!=0)'),
+]
+
+def gen_variables():
+    it = itertools.product(templates, numbers, directions, layers)
+    for (h,v), n, d, (ln,lc) in it:
+        name = h.format(n=n,d=d) + '_' + ln
+        var = v.format(i=(n-1), d=d)
+        cond = '(Output_number_true=={})'.format(n)
+        if lc is not None:
+            cond += ('&&' + lc)
+        yield name, var, cond
+
+def get_range(name):
+    if 'residuals' in name:
+        if 'X' in name:
+            return -0.05, 0.05
+        else:
+            return -0.5, 0.5
+    else:
+        return -5, 5
+
+def make_hist(tree, name, var, cond):
+    print name, var, cond
+    binmin, binmax = get_range(name)
+    varg = '{}>>{}(1000,{},{})'.format(var,name,binmin,binmax)
+    tree.Draw(varg, cond)
+    hist = ROOT.gROOT.Get(name)
+    return hist
+
+
+def make_all_hists(tree):
+    for vars in gen_variables:
+        make_hist(tree, *vars)
+
 def make_histograms(input_path, output_path):
-
-    tfile = ROOT.TFile.Open(input_path, "READ")
-    ttree = tfile.Get("NNValidation")
-
-    ofile = ROOT.TFile.Open(output_path, "RECREATE")
-
-    for name, var, cond in gen_hists_triplets():
-        # print '==> ' + name
-        # print '  -> ' + var
-        # print '  -> ' + cond
-        hist(
-            ttree,
-            name,
-            var,
-            cond
-        )
-    ofile.Write("", ROOT.TObject.kWriteDelete)
-
-
-def hist(ttree, name, var, cond):
-    ttree.Draw("{}>>{}(1000)".format(var, name), cond)
-    return ROOT.gROOT.Get(name)
-
-def gen_hists_triplets():
-    for name, var, cond in gen_res_triplets():
-        yield name, var , cond
-    for name, var, cond in gen_res_triplets():
-        name = name.replace('residuals', 'pull')
-        var = '(' + var + ')' + '/' + get_uncert_var(name)
-        yield name, var, cond
-    for trp in gen_var_triplets():
-        yield trp
-
-def get_uncert_var(name):
-    var = 'Output_uncertainty_'
-    m = re.match('h_.*_(.*)_(.*)_.*', name)
-    var += m.group(1)
-    var += '[{}]'.format(int(m.group(2)) - 1)
-    return var
-
-def gen_res_triplets():
-    name = 'h_residuals'
-    dirs = ['X', 'Y']
-    layers = [
-        ('all', ''),
-        ('ibl', 'NN_layer==0 && NN_barrelEC==0'),
-        ('barrel', 'NN_layer>0 && NN_barrelEC==0'),
-        ('endcaps', 'NN_barrelEC!=0')
-    ]
-
-    mult = [
-        (1, 'NN_nparticles1==1'),
-        (2, 'NN_nparticles2==1'),
-        (3, '(NN_nparticles3==1) && (NN_nparticles_excess==0)')
-    ]
-
-    iter = itertools.product(dirs, layers, mult)
-
-    for d, (lname, lcond), (npart, ncond) in iter:
-
-        idx = 2 * (npart - 1) + int(d == 'Y')
-
-        name = 'h_residuals_{}_{}_{}'.format(d, npart, lname)
-
-        var = 'Output_estimated_positions[%d] - Output_true_positions[%d]' % \
-              (idx, idx)
-
-        if lcond == '':
-            cond = ncond
-        else:
-            cond = '({})&&({})'.format(lcond, ncond)
-
-        yield name, var, cond
-
-def gen_var_triplets():
-    name = 'h_residuals'
-    dirs = ['X', 'Y']
-    layers = [
-        ('all', ''),
-        ('ibl', 'NN_layer==0 && NN_barrelEC==0'),
-        ('barrel', 'NN_layer>0 && NN_barrelEC==0'),
-        ('endcaps', 'NN_barrelEC!=0')
-    ]
-
-    vars = [
-        'estimated_positions_raw',
-        'estimated_positions',
-        'true_positions_raw',
-        'true_positions',
-        'uncertainty'
-    ]
-
-    mult = [
-        (1, 'NN_nparticles1==1'),
-        (2, 'NN_nparticles2==1'),
-        (3, '(NN_nparticles3==1) && (NN_nparticles_excess==0)')
-    ]
-
-    iter = itertools.product(vars, dirs, layers, mult)
-
-    for v, d, (lname, lcond), (npart, ncond) in iter:
-
-        idx = 2 * (npart - 1) + int(d == 'Y')
-
-        name = '{}_{}_{}_{}'.format(v, d, npart, lname)
-
-        if v == 'uncertainty':
-            idx = npart - 1
-            v = v + '_' + d
-
-        var = 'Output_%s[%d]' % (v, idx)
-
-        if lcond == '':
-            cond = ncond
-        else:
-            cond = '({})&&({})'.format(lcond, ncond)
-
-        yield name, var, cond
+    infile = ROOT.TFile(input_path)
+    tree = infile.Get('NNinput')
+    outfile = ROOT.TFile(output_path, 'RECREATE')
+    for vars in gen_variables():
+        make_hist(tree, *vars)
+    outfile.Write()
