@@ -34,5 +34,8 @@ atlas_add_library(pixel-NN-Lib
 	xAODRootAccess
 	EventLoop
 )
-		
+
+
+atlas_add_executable(skip12m util/skip12m.cxx INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} LINK_LIBRARIES ${ROOT_LIBRARIES})
+
 atlas_install_python_modules(python/*.py)
