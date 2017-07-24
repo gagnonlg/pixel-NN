@@ -1,5 +1,6 @@
 """ Program to produce the pixel clustering NN performance plots """
 import argparse
+import array
 import collections
 import itertools
 import logging
@@ -23,6 +24,50 @@ CONDITIONALS = [
     'cluster_size_X',
     'cluster_size_Y'
 ]
+
+PALETTE_SET = False
+
+
+def _set_palette():
+    """ Set the custom color palette
+
+    It is the default InvertedDarkBodyRadiator palette with white as
+    the first color.
+    See https://root.cern.ch/doc/master/TColor_8cxx_source.html#l02473
+    """
+    global PALETTE_SET  # pylint: disable=global-statement
+    if not PALETTE_SET:
+        stops = array.array('d', [
+            0.0000, 0.1250, 0.2500,
+            0.3750, 0.5000, 0.6250,
+            0.7500, 0.8750, 1.0000
+        ])
+        red = array.array('d', [
+            1.0, 234./255., 237./255.,
+            230./255., 212./255., 156./255.,
+            99./255., 45./255., 0./255.
+        ])
+        green = array.array('d', [
+            1.0, 238./255.,
+            238./255., 168./255.,
+            101./255., 45./255.,
+            0./255., 0./255., 0./255.
+        ])
+        blue = array.array('d', [
+            1.0, 95./255., 11./255.,
+            8./255., 9./255., 3./255.,
+            1./255., 1./255., 0./255.
+        ])
+        ROOT.TColor.CreateGradientColorTable(
+            9,
+            stops,
+            red,
+            green,
+            blue,
+            255,
+            1.0
+        )
+        PALETTE_SET = True
 
 
 def _get_args():
@@ -189,7 +234,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
     name = '_'.join([variable, str(nparticle), '2D', layer])
     th2 = hsdict[name]
 
-    ROOT.gStyle.SetPalette(ROOT.kInvertedDarkBodyRadiator)
+    _set_palette()
     ROOT.gStyle.SetNumberContours(255)
     ROOT.gStyle.SetPadRightMargin(0.15)
 
@@ -381,8 +426,8 @@ def _main():
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
     # _plot_1d_hists(hists, preliminary=args.preliminary)
-    # _plot_2d_hists(hists, preliminary=args.preliminary)
-    _plot_2d_cond_hists(hists, preliminary=args.preliminary)
+    _plot_2d_hists(hists, preliminary=args.preliminary)
+    # _plot_2d_cond_hists(hists, preliminary=args.preliminary)
     return 0
 
 
