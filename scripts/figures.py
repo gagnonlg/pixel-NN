@@ -250,6 +250,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
         )
     )
     th2.GetZaxis().SetLabelSize(0.04)
+    ROOT.TGaxis.SetMaxDigits(4)
 
     if 'residual' in variable:
         th2.GetXaxis().SetRangeUser(-0.05, 0.05)
