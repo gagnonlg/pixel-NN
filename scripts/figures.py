@@ -236,7 +236,6 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
 
     _set_palette()
     ROOT.gStyle.SetNumberContours(255)
-    ROOT.gStyle.SetPadRightMargin(0.15)
 
     canvas = ROOT.TCanvas('canvas_' + name, '', 0, 0, 800, 600)
 
@@ -290,6 +289,8 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
 
 
 def _plot_2d_hists(hsdict, preliminary):
+    oldmargin = ROOT.gStyle.GetPadRightMargin()
+    ROOT.gStyle.SetPadRightMargin(0.15)
 
     prod = itertools.product(VARIABLES, NPARTICLES, LAYERS)
     for var, npart, lyr in prod:
@@ -300,6 +301,8 @@ def _plot_2d_hists(hsdict, preliminary):
             layer=lyr,
             preliminary=preliminary
         )
+
+    ROOT.gStyle.SetPadRightMargin(oldmargin)
 
 
 def _varlabel(var):
@@ -320,7 +323,13 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     # pylint: disable=too-many-locals
     name = '_'.join([variable, str(nparticle), direction, '2D', cond, layer])
     LOG.debug(name)
-    hist = hsdict[name].ProfileX(name + "_pfx", 1, -1, "s")
+
+    hist = hsdict[name].ProfileX(
+        name + "_pfx",
+        1,
+        -1,
+        "s"
+    )
 
     canvas = ROOT.TCanvas("canvas_" + name, '', 0, 0, 800, 600)
     legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.85)
@@ -330,22 +339,20 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
         hist.Rebin(4)
     hist.SetFillColor(ROOT.kYellow)
     hist.SetMarkerSize(0)
-    hist.Draw("E4")
+    hist.Draw("E2")
     hist.Draw("hist same")
 
     if 'pull' in variable:
-        rangey = 5.0
+        rangey = 6.5
     elif direction == 'X':
-        rangey = 0.05
+        rangey = 0.066
     else:
-        rangey = 0.5
+        rangey = 0.66
 
-    if cond == 'cluster_size':
-        rangex = (0, 50)
-    elif cond.startswith('cluster_size_'):
-        rangex = (0, 10)
-    else:
-        rangex = (-3, 3)
+    rangex = (
+        hsdict[name].FindFirstBinAbove(),
+        hsdict[name].FindLastBinAbove()
+    )
 
     hist.SetMaximum(rangey)
     hist.SetMinimum(-rangey)
@@ -365,7 +372,6 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
         )
     )
 
-    legend.AddEntry(hist, '#mu #pm 1 #sigma', 'LF')
     legend.Draw()
 
     _draw_atlas_label(prelim)
@@ -392,6 +398,8 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
 
 
 def _plot_2d_cond_hists(hsdict, preliminary):
+
+    ROOT.gStyle.SetErrorX(0.5)
 
     prod = itertools.product(
         VARIABLES,
