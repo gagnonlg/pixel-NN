@@ -318,6 +318,14 @@ def _varlabel(var):
         return 'Cluster size in Y direction', ''
 
 
+def _rebin_cluster_size(hist, last):
+    xbins = array.array(
+        'd',
+        range(1, 10) + range(10, last + 5, 5)
+    )
+    return hist.Rebin(len(xbins) - 1, hist.GetName() + '_rebined', xbins)
+
+
 def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
@@ -335,11 +343,17 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.85)
     legend.SetBorderSize(0)
 
+    varbin = False
     if 'cluster_size' not in cond:
         hist.Rebin(4)
-    hist.SetFillColor(ROOT.kYellow)
-    hist.SetMarkerSize(0)
-    hist.Draw("E2")
+    elif 'cluster_size_X' not in cond and 'cluster_size_Y' not in cond:
+        varbin = True
+        hist = _rebin_cluster_size(hist, hsdict[name].FindLastBinAbove(1))
+
+    hist_err = hist.Clone(hist.GetName() + "_err")
+    hist_err.SetFillColor(ROOT.kYellow)
+    hist_err.SetMarkerSize(0)
+    hist_err.Draw("E2")
     hist.Draw("hist same")
 
     if 'pull' in variable:
@@ -351,24 +365,28 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
 
     rangex = (
         hsdict[name].FindFirstBinAbove(),
-        hsdict[name].FindLastBinAbove()
+        hsdict[name].FindLastBinAbove(1)
     )
 
+    hist_err.SetMaximum(rangey)
+    hist_err.SetMinimum(-rangey)
+    hist_err.GetXaxis().SetRangeUser(*rangex)
     hist.SetMaximum(rangey)
     hist.SetMinimum(-rangey)
     hist.GetXaxis().SetRangeUser(*rangex)
 
     lbl, unit = _varlabel(cond)
     hist.SetTitle(
-        ';{c} {bcu};{v} / {w} {cu}'.format(
+        ';{c} {bcu};{v} {l} {w} {cu}'.format(
             c=lbl,
             bcu=('[{}]'.format(unit) if unit != '' else ''),
             v='Truth hit {} {}'.format(
                 variable.replace('corr_', ''),
                 '[mm]' if 'residuals' in variable else ''
             ),
-            cu=unit,
-            w=hist.GetBinWidth(1)
+            l='/' if not varbin else '',
+            cu=unit if not varbin else '',
+            w=hist.GetBinWidth(1) if not varbin else ''
         )
     )
 
