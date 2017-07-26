@@ -158,7 +158,7 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
         legend.AddEntry(
             hist,
             '#splitline{%s clusters}'
-            '{#mu = %.3f %s, %s = %.3f %s}' % (
+            '{#mu = %.2f %s, %s = %.2f %s}' % (
                 _layer_name(layer),
                 mean,
                 'mm' if 'residuals' in variable else '',
@@ -454,8 +454,8 @@ def _main():
     hists = _get_histograms(args.input)
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
-    # _plot_1d_hists(hists, preliminary=args.preliminary)
-    _plot_2d_hists(hists, preliminary=args.preliminary)
+    _plot_1d_hists(hists, preliminary=args.preliminary)
+    # _plot_2d_hists(hists, preliminary=args.preliminary)
     # _plot_2d_cond_hists(hists, preliminary=args.preliminary)
     return 0
 
