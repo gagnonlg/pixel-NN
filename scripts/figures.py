@@ -259,7 +259,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
         th2.GetYaxis().SetRangeUser(-5, 5)
 
     th2.SetTitle(
-        ';Truth hit X {v} {u};Truth hit Y {v} {u}'.format(
+        ';Truth hit local X {v} {u};Truth hit local Y {v} {u}'.format(
             v=variable.replace('corr_', ''),
             u='[mm]' if 'residual' in variable else ''
         )
@@ -307,15 +307,15 @@ def _plot_2d_hists(hsdict, preliminary):
 
 def _varlabel(var):
     if var == 'eta':
-        return '#eta', ''
+        return 'global #eta_{cluster}', ''
     if var == 'phi':
-        return '#phi', ''
+        return 'global #phi_{cluster}', ''
     if var == 'cluster_size':
         return 'Cluster size', ''
     if var == 'cluster_size_X':
-        return 'Cluster size in X direction', ''
+        return 'Cluster size in local X direction', ''
     if var == 'cluster_size_Y':
-        return 'Cluster size in Y direction', ''
+        return 'Cluster size in local Y direction', ''
 
 
 def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
@@ -455,8 +455,8 @@ def _main():
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
     # _plot_1d_hists(hists, preliminary=args.preliminary)
-    # _plot_2d_hists(hists, preliminary=args.preliminary)
-    _plot_2d_cond_hists(hists, preliminary=args.preliminary)
+    _plot_2d_hists(hists, preliminary=args.preliminary)
+    # _plot_2d_cond_hists(hists, preliminary=args.preliminary)
     return 0
 
 
