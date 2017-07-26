@@ -318,17 +318,10 @@ def _varlabel(var):
         return 'Cluster size in Y direction', ''
 
 
-def _rebin_cluster_size(hist, last):
-    xbins = array.array(
-        'd',
-        range(1, 10) + range(10, last + 5, 5)
-    )
-    return hist.Rebin(len(xbins) - 1, hist.GetName() + '_rebined', xbins)
-
-
 def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
     name = '_'.join([variable, str(nparticle), direction, '2D', cond, layer])
     LOG.debug(name)
 
@@ -343,18 +336,16 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.85)
     legend.SetBorderSize(0)
 
-    varbin = False
     if 'cluster_size' not in cond:
         hist.Rebin(4)
     elif 'cluster_size_X' not in cond and 'cluster_size_Y' not in cond:
-        varbin = True
-        hist = _rebin_cluster_size(hist, hsdict[name].FindLastBinAbove(1))
+        hist.Rebin(5)
+    else:
+        hist.Rebin(2)
 
     hist_err = hist.Clone(hist.GetName() + "_err")
     hist_err.SetFillColor(ROOT.kYellow)
     hist_err.SetMarkerSize(0)
-    hist_err.Draw("E2")
-    hist.Draw("hist same")
 
     if 'pull' in variable:
         rangey = 6.5
@@ -363,10 +354,13 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     else:
         rangey = 0.66
 
-    rangex = (
-        hsdict[name].FindFirstBinAbove(),
-        hsdict[name].FindLastBinAbove(1)
-    )
+    if 'cluster_size' in cond:
+        if 'size_X' in cond or 'size_Y' in cond:
+            rangex = (1, 10)
+        else:
+            rangex = (1, 50)
+    else:
+        rangex = (-3, 3)
 
     hist_err.SetMaximum(rangey)
     hist_err.SetMinimum(-rangey)
@@ -375,8 +369,16 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
     hist.SetMinimum(-rangey)
     hist.GetXaxis().SetRangeUser(*rangex)
 
+    for i in range(1, hist.GetNbinsX() + 2):
+        if hist.GetBinError(i) == 0:
+            hist.GetXaxis().SetRange(0, i-1)
+            break
+
+    hist_err.Draw("E2")
+    hist.Draw("hist same")
+
     lbl, unit = _varlabel(cond)
-    hist.SetTitle(
+    hist_err.SetTitle(
         ';{c} {bcu};{v} {l} {w} {cu}'.format(
             c=lbl,
             bcu=('[{}]'.format(unit) if unit != '' else ''),
@@ -384,9 +386,9 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
                 variable.replace('corr_', ''),
                 '[mm]' if 'residuals' in variable else ''
             ),
-            l='/' if not varbin else '',
-            cu=unit if not varbin else '',
-            w=hist.GetBinWidth(1) if not varbin else ''
+            l='/',
+            cu=unit,
+            w=hist.GetBinWidth(1)
         )
     )
 
@@ -453,8 +455,8 @@ def _main():
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
     # _plot_1d_hists(hists, preliminary=args.preliminary)
-    _plot_2d_hists(hists, preliminary=args.preliminary)
-    # _plot_2d_cond_hists(hists, preliminary=args.preliminary)
+    # _plot_2d_hists(hists, preliminary=args.preliminary)
+    _plot_2d_cond_hists(hists, preliminary=args.preliminary)
     return 0
 
 
