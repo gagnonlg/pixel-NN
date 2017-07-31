@@ -197,7 +197,6 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
             rangex = 0.4
 
     stack.SetMaximum(stack.GetMaximum('nostack') * scaley)
-    stack.GetXaxis().SetRangeUser(- rangex, rangex)
 
     _draw_atlas_label(preliminary)
     legend.Draw()
@@ -257,6 +256,9 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
     else:
         th2.GetXaxis().SetRangeUser(-5, 5)
         th2.GetYaxis().SetRangeUser(-5, 5)
+
+    th2.GetXaxis().SetLabelSize(0.04)
+    th2.GetYaxis().SetLabelSize(0.04)
 
     th2.SetTitle(
         ';Truth hit local X {v} {u};Truth hit local Y {v} {u}'.format(
@@ -454,8 +456,8 @@ def _main():
     hists = _get_histograms(args.input)
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
-    _plot_1d_hists(hists, preliminary=args.preliminary)
-    # _plot_2d_hists(hists, preliminary=args.preliminary)
+    # _plot_1d_hists(hists, preliminary=args.preliminary)
+    _plot_2d_hists(hists, preliminary=args.preliminary)
     # _plot_2d_cond_hists(hists, preliminary=args.preliminary)
     return 0
 
