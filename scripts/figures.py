@@ -5,6 +5,7 @@ import collections
 import itertools
 import logging
 import os
+import shutil
 import sys
 
 import ROOT
@@ -16,7 +17,7 @@ LAYERS = ['ibl', 'barrel', 'endcap']
 COLORS = [ROOT.kRed, ROOT.kBlack, ROOT.kBlue]
 MARKERS = [21, 8, 23]
 DIRECTIONS = ['X', 'Y']
-VARIABLES = ['pull', 'corr_pull', 'residuals']
+VARIABLES = ['pull', 'corr_pull', 'residuals', 'corr_residuals']
 CONDITIONALS = [
     'eta',
     'phi',
@@ -454,11 +455,16 @@ def _main():
     LOG.info('input: %s', args.input)
     LOG.info('output: %s', args.output)
     hists = _get_histograms(args.input)
+    try:
+        os.makedirs(args.output)
+        os.chdir(args.output)
+    except os.error:
+        pass
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
-    # _plot_1d_hists(hists, preliminary=args.preliminary)
+    _plot_1d_hists(hists, preliminary=args.preliminary)
     _plot_2d_hists(hists, preliminary=args.preliminary)
-    # _plot_2d_cond_hists(hists, preliminary=args.preliminary)
+    _plot_2d_cond_hists(hists, preliminary=args.preliminary)
     return 0
 
 
