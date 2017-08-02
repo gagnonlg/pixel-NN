@@ -157,6 +157,7 @@ EL::StatusCode ClustersLoop :: execute ()
 
 #define accessor(n,t,v) SG::AuxElement::ConstAccessor< t > n (v)
 
+accessor(a_skip_cluster, bool, "skip_cluster");
 accessor(a_sizeX, int, "NN_sizeX");
 accessor(a_sizeY, int, "NN_sizeY");
 accessor(a_posX, std::vector<float>, "NN_positions_indexX");
@@ -199,8 +200,22 @@ Positions sortedPositions(std::vector<float>& xs, std::vector<float>& ys)
 
 void ClustersLoop::clustersLoop(const DataVector<Cluster>* clusters)
 {
+	if (clusters->size() == 0)
+		return;
+
+	bool first = true;
+	bool has_flag;
+
 	out_ClusterNumber = 0;
 	for (auto c : *clusters) {
+
+		if (first) {
+			first = false;
+			has_flag = a_skip_cluster.isAvailable(*c);
+		}
+
+		if (has_flag && a_skip_cluster(*c))
+			continue;
 
 		/* fetch cluster observables */
 		const std::vector<float> matrix = a_matrix(*c);
