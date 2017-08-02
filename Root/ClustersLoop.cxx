@@ -432,7 +432,7 @@ void ClustersLoop::fill_evaluated_NN_info(const Cluster& cluster, size_t i)
 	GET_VV(corr_true_X);
 	GET_VV(corr_true_Y);
 
-	Output_number_true = Output_true_X.size();
+	Output_number_true = a_posX(cluster).size();
 }
 
 #undef GET_VV
