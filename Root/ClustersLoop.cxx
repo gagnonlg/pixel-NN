@@ -272,6 +272,9 @@ void ClustersLoop::clustersLoop(const DataVector<Cluster>* clusters)
 		if (abs(out_barrelEC > 2))
 			continue;
 
+		if (abs(out_globalEta) > 2.5)
+			continue;
+
 		/* Fill charge matrix */
 		for (size_t i = 0; i < matrix.size(); i++) {
 			double k = 1;
