@@ -63,11 +63,11 @@ def get_range(var):
 
     def _range(var):
         if '_uncert_' in var:
-            return 100, -5, 5
+            return 100, -6, 6
         if 'positions_X' in var:
-            return 100, -0.05, 0.05
+            return 100, -0.06, 0.06
         if 'positions_Y' in var:
-            return 100, -0.5, 0.5
+            return 100, -0.6, 0.6
         if var == 'globalEta':
             return 100, -5, 5
         if var == 'globalPhi':
