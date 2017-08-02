@@ -5,9 +5,11 @@ ROOT.gROOT.SetBatch(True)
 
 templates = [
    ('residuals_{n}_{d}', '(Output_positions_{d} - Output_true_{d})'),
+   ('corr_residuals_{n}_{d}', '(Output_corr_positions_{d} - Output_corr_true_{d})'),
    ('pull_{n}_{d}', '(Output_positions_{d} - Output_true_{d})/Output_uncert_{d}'),
    ('corr_pull_{n}_{d}', '(Output_corr_positions_{d} - Output_corr_true_{d})/Output_corr_uncert_{d}'),
    ('residuals_{n}_2D', '(Output_positions_Y - Output_true_Y):(Output_positions_X - Output_true_X)'),
+   ('corr_residuals_{n}_2D', '(Output_corr_positions_Y - Output_corr_true_Y):(Output_corr_positions_X - Output_corr_true_X)'),
    ('pull_{n}_2D', '((Output_positions_Y - Output_true_Y)/Output_uncert_Y):((Output_positions_X - Output_true_X)/Output_uncert_X)'),
    ('corr_pull_{n}_2D', '(Output_corr_positions_Y - Output_corr_true_Y)/Output_corr_uncert_Y:(Output_corr_positions_X - Output_corr_true_X)/Output_corr_uncert_X'),
    ('residuals_{n}_{d}_2D_eta', '(Output_positions_{d} - Output_true_{d}):globalEta'),
@@ -15,16 +17,21 @@ templates = [
    ('residuals_{n}_{d}_2D_cluster_size', '(Output_positions_{d} - Output_true_{d}):cluster_size'),
    ('residuals_{n}_{d}_2D_cluster_size_X', '(Output_positions_{d} - Output_true_{d}):cluster_size_X'),
    ('residuals_{n}_{d}_2D_cluster_size_Y', '(Output_positions_{d} - Output_true_{d}):cluster_size_Y'),
+   ('corr_residuals_{n}_{d}_2D_eta', '(Output_corr_positions_{d} - Output_corr_true_{d}):globalEta'),
+   ('corr_residuals_{n}_{d}_2D_phi', '(Output_corr_positions_{d} - Output_corr_true_{d}):globalPhi'),
+   ('corr_residuals_{n}_{d}_2D_cluster_size', '(Output_corr_positions_{d} - Output_corr_true_{d}):cluster_size'),
+   ('corr_residuals_{n}_{d}_2D_cluster_size_X', '(Output_corr_positions_{d} - Output_corr_true_{d}):cluster_size_X'),
+   ('corr_residuals_{n}_{d}_2D_cluster_size_Y', '(Output_corr_positions_{d} - Output_corr_true_{d}):cluster_size_Y'),
    ('pull_{n}_{d}_2D_eta', '(Output_positions_{d} - Output_true_{d})/Output_uncert_{d}:globalEta'),
    ('pull_{n}_{d}_2D_phi', '(Output_positions_{d} - Output_true_{d})/Output_uncert_{d}:globalPhi'),
    ('pull_{n}_{d}_2D_cluster_size', '(Output_positions_{d} - Output_true_{d})/Output_uncert_{d}:cluster_size'),
    ('pull_{n}_{d}_2D_cluster_size_X', '(Output_positions_{d} - Output_true_{d})/Output_uncert_{d}:cluster_size_X'),
    ('pull_{n}_{d}_2D_cluster_size_Y', '(Output_positions_{d} - Output_true_{d})/Output_uncert_{d}:cluster_size_Y'),
-   ('corr_pull_{n}_{d}_2D_eta', '(Output_corr_positions_{d} - Output_true_{d})/Output_corr_uncert_{d}:globalEta'),
-   ('corr_pull_{n}_{d}_2D_phi', '(Output_corr_positions_{d} - Output_true_{d})/Output_corr_uncert_{d}:globalPhi'),
-   ('corr_pull_{n}_{d}_2D_cluster_size', '(Output_corr_positions_{d} - Output_true_{d})/Output_corr_uncert_{d}:cluster_size'),
-   ('corr_pull_{n}_{d}_2D_cluster_size_X', '(Output_corr_positions_{d} - Output_true_{d})/Output_corr_uncert_{d}:cluster_size_X'),
-   ('corr_pull_{n}_{d}_2D_cluster_size_Y', '(Output_corr_positions_{d} - Output_true_{d})/Output_corr_uncert_{d}:cluster_size_Y'),
+   ('corr_pull_{n}_{d}_2D_eta', '(Output_corr_positions_{d} - Output_corr_true_{d})/Output_corr_uncert_{d}:globalEta'),
+   ('corr_pull_{n}_{d}_2D_phi', '(Output_corr_positions_{d} - Output_corr_true_{d})/Output_corr_uncert_{d}:globalPhi'),
+   ('corr_pull_{n}_{d}_2D_cluster_size', '(Output_corr_positions_{d} - Output_corr_true_{d})/Output_corr_uncert_{d}:cluster_size'),
+   ('corr_pull_{n}_{d}_2D_cluster_size_X', '(Output_corr_positions_{d} - Output_corr_true_{d})/Output_corr_uncert_{d}:cluster_size_X'),
+   ('corr_pull_{n}_{d}_2D_cluster_size_Y', '(Output_corr_positions_{d} - Output_corr_true_{d})/Output_corr_uncert_{d}:cluster_size_Y'),
 ]
 
 numbers = [1, 2, 3]
