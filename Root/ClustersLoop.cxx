@@ -69,6 +69,8 @@ EL::StatusCode ClustersLoop :: histInitialize ()
 
 EL::StatusCode ClustersLoop :: initialize ()
 {
+	m_first = true;
+
 	xAOD::TEvent* event = wk()->xaodEvent();
 
 	const DataVector<Cluster> *clusters;
@@ -203,18 +205,18 @@ void ClustersLoop::clustersLoop(const DataVector<Cluster>* clusters)
 	if (clusters->size() == 0)
 		return;
 
-	bool first = true;
-	bool has_flag;
-
 	out_ClusterNumber = 0;
 	for (auto c : *clusters) {
 
-		if (first) {
-			first = false;
-			has_flag = a_skip_cluster.isAvailable(*c);
+		if (m_first) {
+			m_first = false;
+			m_has_flag = a_skip_cluster.isAvailable(*c);
+			std::cout << "skip_cluster flag available: "
+				  << (m_has_flag? "True" : "False")
+				  << std::endl;
 		}
 
-		if (has_flag && a_skip_cluster(*c))
+		if (m_has_flag && a_skip_cluster(*c))
 			continue;
 
 		/* fetch cluster observables */

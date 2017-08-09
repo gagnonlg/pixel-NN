@@ -91,6 +91,9 @@ public:
 	std::vector<double> Output_corr_true_X; //!
 	std::vector<double> Output_corr_true_Y; //!
 
+	bool m_first; //!
+	bool m_has_flag; //!
+
 	// have to explicitely ask for default constructor
 	// if we don't, job submission from driver script fails
 	ClustersLoop () = default;
