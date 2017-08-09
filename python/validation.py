@@ -102,9 +102,10 @@ def make_all_hists(tree):
     for vars in gen_variables:
         make_hist(tree, *vars)
 
-def make_histograms(input_path, output_path):
-    infile = ROOT.TFile(input_path)
-    tree = infile.Get('NNinput')
+def make_histograms(input_paths, output_path):
+    tree = ROOT.TChain('NNinput')
+    for path in input_paths:
+        tree.Add(path)
     outfile = ROOT.TFile(output_path, 'RECREATE')
     for vars in gen_variables():
         make_hist(tree, *vars)

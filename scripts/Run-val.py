@@ -51,9 +51,9 @@ driver.submitOnly(job, "submitDir")
 
 import glob
 
-input_path = glob.glob("submitDir/data-NNinput/*.root")[0]
+input_paths = glob.glob("submitDir/data-NNinput/*.root")
 output_path = "test.root"
 
 import importlib
 validation = importlib.import_module('.validation', 'pixel-NN')
-validation.make_histograms(input_path, output_path)
+validation.make_histograms(input_paths, output_path)
