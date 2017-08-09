@@ -14,6 +14,7 @@ logging.info('Parsing arguments')
 argp = argparse.ArgumentParser()
 argp.add_argument('--input', required=True)
 argp.add_argument('--nevents', type=int)
+argp.add_argument('--ignore-errors', action='store_true')
 args = argp.parse_args()
 
 logging.info("Searching for datasets")
@@ -44,8 +45,14 @@ clustersLoop.outputName = "NNinput"
 logging.info("submitting NNinput creation job")
 shutil.rmtree("submitDir", ignore_errors=True)
 driver = ROOT.EL.DirectDriver()
-driver.submitOnly(job, "submitDir")
 
+try:
+    driver.submit(job, "submitDir")
+except SystemError:
+    if args.ignore_errors:
+        print "*** caught SystemError, ignoring it"
+    else:
+        raise
 
 #########################################
 
