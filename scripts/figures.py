@@ -99,8 +99,9 @@ def _init_root():
 
 
 def _fit(thist):
+    mu = thist.GetMean();
     sig = thist.GetStdDev()
-    thist.Fit('gaus', 'Q0', '', -3 * sig, 3 * sig)
+    thist.Fit('gaus', 'Q0', '', mu - 3 * sig, mu + 3 * sig)
     fit = thist.GetFunction('gaus')
     return fit.GetParameter('Mean'), fit.GetParameter('Sigma')
 
