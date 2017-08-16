@@ -17,7 +17,8 @@ LAYERS = ['ibl', 'barrel', 'endcap']
 COLORS = [ROOT.kRed, ROOT.kBlack, ROOT.kBlue]
 MARKERS = [21, 8, 23]
 DIRECTIONS = ['X', 'Y']
-VARIABLES = ['pull', 'corr_pull', 'residuals', 'corr_residuals']
+#VARIABLES = ['pull', 'corr_pull', 'residuals', 'corr_residuals']
+VARIABLES = ['corr_pull', 'corr_residuals']
 CONDITIONALS = [
     'eta',
     'phi',
@@ -198,6 +199,8 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
         else:
             rangex = 0.4
 
+    print 'SETTING RANGE AT ' + str(rangex)
+    stack.GetXaxis().SetRangeUser(-rangex, rangex)
     stack.SetMaximum(stack.GetMaximum('nostack') * scaley)
 
     _draw_atlas_label(preliminary)
@@ -322,14 +325,23 @@ def _varlabel(var):
         return 'Cluster size in local Y direction', ''
 
 
-def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
+def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
     # pylint: disable=too-many-statements
-    name = '_'.join([variable, str(nparticle), direction, '2D', cond, layer])
-    LOG.debug(name)
 
-    hist = hsdict[name].ProfileX(
+    hist_incl = None
+    for lyr in LAYERS:
+        name = '_'.join([variable, str(nparticle), direction, '2D', cond, lyr])
+        LOG.debug(name)
+        if hist_incl is None:
+            hist_incl = hsdict[name]
+        else:
+            hist_incl.Add(hsdict[name])
+
+    name = '_'.join([variable, str(nparticle), direction, '2D', cond])
+
+    hist = hist_incl.ProfileX(
         name + "_pfx",
         1,
         -1,
@@ -360,9 +372,11 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
 
     if 'cluster_size' in cond:
         if 'size_X' in cond or 'size_Y' in cond:
-            rangex = (1, 10)
+            rangex = (1, 7)
         else:
-            rangex = (1, 50)
+            rangex = (1, 30)
+    elif 'eta' in cond:
+        rangex = (-2.5, 2.5)
     else:
         rangex = (-3, 3)
 
@@ -412,12 +426,6 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, layer, prelim):
 
     txt.DrawText(0.2, 0.72, 'Local {} direction'.format(direction))
 
-    txt.DrawText(
-        0.2,
-        0.67,
-        layer.upper() if layer == 'ibl' else layer[0].upper() + layer[1:]
-    )
-
     canvas.SaveAs(name + '.pdf')
 
 
@@ -430,17 +438,15 @@ def _plot_2d_cond_hists(hsdict, preliminary):
         CONDITIONALS,
         NPARTICLES,
         DIRECTIONS,
-        LAYERS
     )
 
-    for var, cond, npart, direc, lyr in prod:
+    for var, cond, npart, direc in prod:
         _plot_2d_cond(
             hsdict=hsdict,
             variable=var,
             cond=cond,
             nparticle=npart,
             direction=direc,
-            layer=lyr,
             prelim=preliminary
         )
 
@@ -458,9 +464,9 @@ def _main():
     hists = _get_histograms(args.input)
     try:
         os.makedirs(args.output)
-        os.chdir(args.output)
     except os.error:
         pass
+    os.chdir(args.output)
     for histname, thist in hists.iteritems():
         LOG.debug('%s: %s', histname, str(thist))
     _plot_1d_hists(hists, preliminary=args.preliminary)
