@@ -10,6 +10,9 @@ import sys
 
 import ROOT
 
+figures = importlib.import_module('.figures', 'pixel-NN')
+
+
 
 LOG = logging.getLogger(os.path.basename(__file__))
 NPARTICLES = [1, 2, 3]
@@ -92,13 +95,6 @@ def _get_histograms(path):
     return hdict
 
 
-def _init_root():
-    ROOT.gROOT.SetBatch()
-    ROOT.gROOT.LoadMacro("atlasstyle/AtlasStyle.C")
-    ROOT.gROOT.LoadMacro("atlasstyle/AtlasUtils.C")
-    ROOT.SetAtlasStyle()
-
-
 def _fit(thist):
     mu = thist.GetMean();
     sig = thist.GetStdDev()
@@ -111,19 +107,6 @@ def _fwhm(thist):
     bin1 = thist.FindFirstBinAbove(thist.GetMaximum() * 0.5)
     bin2 = thist.FindLastBinAbove(thist.GetMaximum() * 0.5)
     return thist.GetBinCenter(bin2) - thist.GetBinCenter(bin1)
-
-
-def _draw_atlas_label(preliminary):
-    ROOT.ATLAS_LABEL(0.2, 0.88)
-    txt = ROOT.TLatex()
-    txt.SetNDC()
-    txt.DrawText(
-        0.33,
-        0.88,
-        'Simulation {}'.format(
-            'Preliminary' if preliminary else 'Internal'
-        )
-    )
 
 
 def _layer_name(layer):
@@ -203,7 +186,7 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
     stack.GetXaxis().SetRangeUser(-rangex, rangex)
     stack.SetMaximum(stack.GetMaximum('nostack') * scaley)
 
-    _draw_atlas_label(preliminary)
+    figures.draw_atlas_label(preliminary)
     legend.Draw()
 
     txt = ROOT.TLatex()
@@ -458,7 +441,6 @@ def _plot_2d_cond_hists(hsdict, preliminary):
 def _main():
     args = _get_args()
     logging.basicConfig(level=args.loglevel)
-    _init_root()
     LOG.info('input: %s', args.input)
     LOG.info('output: %s', args.output)
     hists = _get_histograms(args.input)
