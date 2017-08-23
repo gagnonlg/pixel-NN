@@ -6,6 +6,7 @@ import importlib
 import time
 
 import numpy as np
+import pylatex as latex
 import ROOT
 import root_numpy
 import sklearn.metrics
@@ -25,10 +26,11 @@ LCONDS = [
 def _get_args():
     args = argparse.ArgumentParser()
     args.add_argument('--input', default=TEST_PATH)
+    args.add_argument('--nclusters', default=10000000, type=int)
     return args.parse_args()
 
 
-def _load_data(path):
+def _load_data(path, nclusters):
     data = collections.OrderedDict()
     for name, cond in LCONDS:
         data[name] = root_numpy.root2array(
@@ -40,7 +42,7 @@ def _load_data(path):
                 "Output_number_estimated"
             ],
             selection=cond,
-            stop=10000000
+            stop=nclusters
         )
         data[name]['Output_number_true'][
             np.where(data[name]['Output_number_true'] > 3)
@@ -128,19 +130,54 @@ def _roc_graph(data, classes, prelim=False):
     canvas.SaveAs('ROC_{}vs{}.pdf'.format(pos, neg))
 
 
+def _confusion_matrices(data):
+
+    for layer in data:
+        matrix = np.zeros((3,3))
+        for i_true in [1, 2, 3]:
+            subdata = data[layer][np.where(data[layer]['Output_number_true'] == i_true)]
+            for i_nn in [1, 2, 3]:
+                nclas = np.count_nonzero(subdata['Output_number_estimated'] == i_nn)
+                matrix[i_nn - 1, i_true - 1] = float(nclas) / subdata.shape[0]
+
+        table = latex.Tabular('r | c c c')
+        table.add_row(
+            '',
+            latex.utils.bold('True:1'),
+            latex.utils.bold('True:2'),
+            latex.utils.bold('True:3')
+        )
+        table.add_hline()
+        for i in range(3):
+            row = [latex.utils.bold('NN:{}'.format(i + 1))]
+            for j in range(3):
+                row.append('{:.2f}'.format(matrix[i, j]))
+            table.add_row(row)
+        path = 'confusion_{}.tex'.format(layer)
+        with open(path, 'w') as wfile:
+            wfile.write(table.dumps())
+            print '  -> wrote ' + path
+
+
+def _do_rocs(data):
+    _roc_graph(data, (3, 2))
+    _roc_graph(data, (3, 1))
+    _roc_graph(data, (2, 3))
+    _roc_graph(data, (2, 1))
+    _roc_graph(data, (1, 2))
+    _roc_graph(data, (1, 3))
+
+
 def _main():
 
     t_0 = time.time()
     args = _get_args()
     print '==> Loading data from ' + args.input
-    out = _load_data(args.input)
+    out = _load_data(args.input, args.nclusters)
     print '==> Drawing the ROC curves'
-    _roc_graph(out, (3, 2))
-    _roc_graph(out, (3, 1))
-    _roc_graph(out, (2, 3))
-    _roc_graph(out, (2, 1))
-    _roc_graph(out, (1, 2))
-    _roc_graph(out, (1, 3))
+    _do_rocs(out)
+    print '==> Computing the confusion matrices'
+    _confusion_matrices(out)
     print '==> Completed in {:.2f}s'.format(time.time() - t_0)
 
 if __name__ == '__main__':
