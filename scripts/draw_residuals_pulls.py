@@ -2,6 +2,7 @@
 import argparse
 import array
 import collections
+import importlib
 import itertools
 import logging
 import os
@@ -119,7 +120,7 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
     name = '_'.join([variable, str(nparticle), direction])
 
     canvas = ROOT.TCanvas('canvas_' + name, '', 0, 0, 800, 600)
-    legend = ROOT.TLegend(0.6, 0.6, 0.9, 0.85)
+    legend = ROOT.TLegend(0.61, 0.6, 0.91, 0.85)
     legend.SetBorderSize(0)
     stack = ROOT.THStack('stk_' + name, '')
 
@@ -257,7 +258,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
 
     th2.Draw('COLZ')
 
-    _draw_atlas_label(preliminary)
+    figures.draw_atlas_label(preliminary)
 
     txt = ROOT.TLatex()
     txt.SetNDC()
@@ -339,8 +340,6 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
         hist.Rebin(4)
     elif 'cluster_size_X' not in cond and 'cluster_size_Y' not in cond:
         hist.Rebin(5)
-    else:
-        hist.Rebin(2)
 
     hist_err = hist.Clone(hist.GetName() + "_err")
     hist_err.SetFillColor(ROOT.kYellow)
@@ -355,20 +354,26 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
 
     if 'cluster_size' in cond:
         if 'size_X' in cond or 'size_Y' in cond:
-            rangex = (1, 7)
+            rangex = (1, 8)
         else:
-            rangex = (1, 30)
+            rangex = (1, 25)
     elif 'eta' in cond:
         rangex = (-2.5, 2.5)
     else:
         rangex = (-3, 3)
 
+    if 'cluster_size' == cond:
+        bins = [1, 5, 10, 15, 25]
+        hist_err.SetBins(len(bins)-1, array.array('d', bins))
+        hist.SetBins(len(bins)-1, array.array('d', bins))
+
     hist_err.SetMaximum(rangey)
     hist_err.SetMinimum(-rangey)
-    hist_err.GetXaxis().SetRangeUser(*rangex)
+    hist_err.GetXaxis().SetRangeUser(rangex[0], rangex[1])
     hist.SetMaximum(rangey)
     hist.SetMinimum(-rangey)
-    hist.GetXaxis().SetRangeUser(*rangex)
+    hist.GetXaxis().SetRangeUser(rangex[0], rangex[1])
+
 
     for i in range(1, hist.GetNbinsX() + 2):
         if hist.GetBinError(i) == 0:
@@ -395,7 +400,7 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
 
     legend.Draw()
 
-    _draw_atlas_label(prelim)
+    figures.draw_atlas_label(prelim)
 
     txt = ROOT.TLatex()
     txt.SetNDC()
