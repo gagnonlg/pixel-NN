@@ -1,5 +1,6 @@
 """ Create the number NN performance graphs """
 # pylint: disable=no-member
+import array
 import argparse
 import collections
 import importlib
@@ -41,6 +42,10 @@ def _load_data(path, nclusters):
                 "Output_number_true",
                 "Output_number_estimated",
                 "globalEta",
+                "globalPhi",
+                "cluster_size",
+                "cluster_size_X",
+                "cluster_size_Y"
             ],
             selection=cond,
             stop=nclusters
@@ -169,7 +174,39 @@ def _calc_rate(data, true, est):
     return float(nclas) / subdata.shape[0]
 
 
-def _tpr_fnr(data, pos, preliminary=False):
+def _get_bins(cond):
+    if cond == 'globalEta':
+        return np.array(
+            [-2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5]
+        )
+    if cond == 'globalPhi':
+        return np.array(
+            [-3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]
+        )
+    if cond == 'cluster_size':
+        return np.array(
+            [1, 5, 10, 15, 20, 25]
+        )
+    if cond == 'cluster_size_X':
+        return np.arange(1, 9)
+    if cond == 'cluster_size_Y':
+        return _get_bins('cluster_size_X')
+
+
+def _get_xlabel(cond):
+    if cond == 'globalEta':
+        return 'global #eta_{cluster}'
+    if cond == 'globalPhi':
+        return 'global #phi_{cluster}'
+    if cond == 'cluster_size':
+        return 'total cluster size'
+    if cond == 'cluster_size_X':
+        return 'cluster size in local x direction'
+    if cond == 'cluster_size_Y':
+        return 'cluster size in local y direction'
+
+
+def _tpr_fnr(data, pos, cond, preliminary=False):
 
     oldmargin = ROOT.gStyle.GetPadRightMargin()
     ROOT.gStyle.SetPadRightMargin(0.15)
@@ -181,104 +218,119 @@ def _tpr_fnr(data, pos, preliminary=False):
     else:
         fnrs = [1, 2]
 
-    for layer in data:
+    # define bins in eta
+    bins = _get_bins(cond)
 
-        # define bins in eta
-        bins = np.array(
-            [-2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5]
-        )
+    bin_data_tpr = np.zeros(len(bins) - 1)
+    bin_data_fnr_A = np.zeros(len(bins) - 1)
+    bin_data_fnr_B = np.zeros(len(bins) - 1)
 
-        # get the indices corresponding to eta bins
-        i_bins = np.digitize(data[layer]['globalEta'], bins)
-        print np.min(data[layer]['globalEta'])
-        print np.max(data[layer]['globalEta'])
-        print np.unique(i_bins)
-        print len(np.unique(i_bins))
+    for i in range(1, len(bins)):
 
-        # loop on the bins
-        bin_data_tpr = np.zeros(len(bins) - 1)
-        bin_data_fnr_A = np.zeros(len(bins) - 1)
-        bin_data_fnr_B = np.zeros(len(bins) - 1)
-        for i in range(1, len(bins)):
-            # selector for clusters in i-th bin
-            # select data in the i-th bin
+        tpr = np.zeros(3)
+        fnrA = np.zeros(3)
+        fnrB = np.zeros(3)
+        stats = np.zeros(3)
+        for j, layer in enumerate(data.keys()):
+            # get the indices corresponding to eta bins
+            i_bins = np.digitize(data[layer][cond], bins)
             bin_data = data[layer][np.where(i_bins == i)]
-            # true positive rate: NN_pos / true_pos
-            bin_data_tpr[i-1] = _calc_rate(bin_data, true=pos, est=pos)
-            bin_data_fnr_A[i-1] = _calc_rate(bin_data, true=pos, est=fnrs[0])
-            bin_data_fnr_B[i-1] = _calc_rate(bin_data, true=pos, est=fnrs[1])
-            print bin_data_tpr[i-1], bin_data_fnr_A[i-1], bin_data_fnr_B[i-1]
+            tpr[j] = _calc_rate(bin_data, true=pos, est=pos)
+            fnrA[j] = _calc_rate(bin_data, true=pos, est=fnrs[0])
+            fnrB[j] = _calc_rate(bin_data, true=pos, est=fnrs[1])
+            stats[j] = bin_data.shape[0]
 
-        hist_tpr = ROOT.TH1F('h', '', 10, -2.5, 2.5)
-        hist_fnr_A = ROOT.TH1F('ha', '', 10, -2.5, 2.5)
-        hist_fnr_B = ROOT.TH1F('hb', '', 10, -2.5, 2.5)
-        root_numpy.fill_hist(hist_tpr, bins[:-1], weights=bin_data_tpr)
-        root_numpy.fill_hist(hist_fnr_A, bins[:-1], weights=bin_data_fnr_A)
-        root_numpy.fill_hist(hist_fnr_B, bins[:-1], weights=bin_data_fnr_B)
-        cnv = ROOT.TCanvas('c', '', 0, 0, 800, 600)
-        # hist_tpr.SetMaximum(hist_tpr.GetMaximum() * 1.5)
-        hist_tpr.SetMaximum(1.2)
-        hist_tpr.SetMinimum(0)
-        hist_tpr.Draw('hist')
-        cnv.Update()
+        if np.all(stats == 0):
+            weights = 0
+        else:
+            weights = stats / float(np.sum(stats))
+        bin_data_tpr[i-1] = np.sum(weights * tpr)
+        bin_data_fnr_A[i-1] = np.sum(weights * fnrA)
+        bin_data_fnr_B[i-1] = np.sum(weights * fnrB)
 
-        rightmax = 1.1*max((hist_fnr_A.GetMaximum(), hist_fnr_B.GetMaximum()))
-        scale = 10 #ROOT.gPad.GetUymax() / rightmax
-        # hist_fnr_A.Scale(scale)
-        # hist_fnr_B.Scale(scale)
-        hist_fnr_A.SetLineColor(ROOT.kRed)
-        hist_fnr_A.SetLineStyle(2)
-        hist_fnr_B.SetLineStyle(7)
-        hist_fnr_B.SetLineColor(ROOT.kBlue)
-        hist_fnr_A.Draw('hist same')
-        hist_fnr_B.Draw('hist same')
+    hist_tpr = ROOT.TH1F(
+        'h',
+        '',
+        len(bins) - 1,
+        array.array('f', bins)
+    )
+    hist_fnr_A = ROOT.TH1F(
+        'ha',
+        '',
+        len(bins) - 1,
+        array.array('f', bins)
+    )
+    hist_fnr_B = ROOT.TH1F(
+        'hb',
+        '',
+        len(bins) - 1,
+        array.array('f', bins)
+    )
+    root_numpy.fill_hist(hist_tpr, bins[:-1], weights=bin_data_tpr)
+    root_numpy.fill_hist(hist_fnr_A, bins[:-1], weights=bin_data_fnr_A)
+    root_numpy.fill_hist(hist_fnr_B, bins[:-1], weights=bin_data_fnr_B)
+    cnv = ROOT.TCanvas('c', '', 0, 0, 800, 600)
+    cnv.SetLogy()
 
-        figures.draw_atlas_label(preliminary)
-        txt = ROOT.TLatex()
-        txt.SetNDC()
-        txt.SetTextSize(txt.GetTextSize() * 0.65)
-        txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
-        txt.DrawText(
-            0.2,
-            0.77,
-            '{}-particle clusters'.format(pos)
-        )
-        txt.DrawText(
-            0.2,
-            0.72,
-            layer
-        )
+    hist_tpr.SetTitle(';{};Pr(estimated | true)'.format(_get_xlabel(cond)))
 
+    # hist_tpr.SetMaximum(hist_tpr.GetMaximum() * 1.5)
+    hist_tpr.SetMaximum(100)
+    hist_tpr.SetMinimum(1e-3)
+    hist_tpr.Draw('hist')
+    cnv.Update()
 
+    rightmax = 1.1*max((hist_fnr_A.GetMaximum(), hist_fnr_B.GetMaximum()))
+    scale = 10 #ROOT.gPad.GetUymax() / rightmax
+    # hist_fnr_A.Scale(scale)
+    # hist_fnr_B.Scale(scale)
+    hist_fnr_A.SetLineColor(ROOT.kRed)
+    hist_fnr_A.SetLineStyle(2)
+    hist_fnr_B.SetLineStyle(7)
+    hist_fnr_B.SetLineColor(ROOT.kBlue)
+    hist_fnr_A.Draw('hist same')
+    hist_fnr_B.Draw('hist same')
 
-        leg = ROOT.TLegend(0.54, 0.68, 0.84, 0.87)
-        leg.SetBorderSize(0)
-        leg.AddEntry(
-            hist_tpr,
-            "Pr(Estimated:{p} | True:{p})".format(p=pos),
-            "L"
-        )
-        leg.AddEntry(
-            hist_fnr_A,
-            "Pr(Estimated:{n} | True:{p})".format(n=fnrs[0], p=pos),
-            "L"
-        )
-        leg.AddEntry(
-            hist_fnr_B,
-            "Pr(Estimated:{n} | True:{p})".format(n=fnrs[1], p=pos),
-            "L"
-        )
-        leg.Draw()
+    figures.draw_atlas_label(preliminary)
+    txt = ROOT.TLatex()
+    txt.SetNDC()
+    txt.SetTextSize(txt.GetTextSize() * 0.65)
+    txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
+    txt.DrawText(
+        0.2,
+        0.77,
+        '{}-particle clusters'.format(pos)
+    )
 
-        cnv.SaveAs('tpr_fnr_{}_{}.pdf'.format(pos, layer))
+    leg = ROOT.TLegend(0.6, 0.68, 0.84, 0.87)
+    leg.SetBorderSize(0)
+    leg.AddEntry(
+        hist_tpr,
+        "estimated={}".format(pos),
+        "L"
+    )
+    leg.AddEntry(
+        hist_fnr_A,
+        "estimated={}".format(fnrs[0]),
+        "L"
+    )
+    leg.AddEntry(
+        hist_fnr_B,
+        "estimated={}".format(fnrs[1]),
+        "L"
+    )
+    leg.Draw()
+
+    cnv.SaveAs('tpr_fnr_{}_{}.pdf'.format(pos, cond))
 
     ROOT.gStyle.SetPadRightMargin(oldmargin)
 
 
 def _do_tpr_fnr(data):
-    _tpr_fnr(data, 1)
-    _tpr_fnr(data, 2)
-    _tpr_fnr(data, 3)
+    for cond in ['globalEta', 'globalPhi', 'cluster_size', 'cluster_size_X', 'cluster_size_Y']:
+        _tpr_fnr(data, 1, cond)
+        _tpr_fnr(data, 2, cond)
+        _tpr_fnr(data, 3, cond)
 
 def _do_rocs(data):
     _roc_graph(data, (3, 2))
@@ -297,8 +349,8 @@ def _main():
     out = _load_data(args.input, args.nclusters)
     # print '==> Drawing the ROC curves'
     # _do_rocs(out)
-    # print '==> Computing the confusion matrices'
-    # _confusion_matrices(out)
+    print '==> Computing the confusion matrices'
+    _confusion_matrices(out)
     print '==> Drawing true positive rate / false negative rate curves'
     _do_tpr_fnr(out)
     print '==> Completed in {:.2f}s'.format(time.time() - t_0)
