@@ -192,14 +192,14 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
 
     txt = ROOT.TLatex()
     txt.SetNDC()
-    txt.SetTextSize(txt.GetTextSize() * 0.65)
-    txt.DrawLatex(0.2, 0.78, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
+    txt.SetTextSize(txt.GetTextSize() * 0.75)
+    txt.DrawLatex(0.2, 0.79, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
     txt.DrawText(
         0.2,
-        0.73,
+        0.74,
         '{}-particle clusters'.format(nparticle)
     )
-    txt.DrawText(0.2, 0.68, 'local {} direction'.format(direction))
+    txt.DrawText(0.2, 0.69, 'local {} direction'.format(direction))
 
     canvas.SaveAs(name + '.pdf')
 
@@ -262,7 +262,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
 
     txt = ROOT.TLatex()
     txt.SetNDC()
-    txt.SetTextSize(txt.GetTextSize() * 0.65)
+    txt.SetTextSize(txt.GetTextSize() * 0.75)
     txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
     txt.DrawText(
         0.2,
@@ -404,7 +404,7 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
 
     txt = ROOT.TLatex()
     txt.SetNDC()
-    txt.SetTextSize(txt.GetTextSize() * 0.65)
+    txt.SetTextSize(txt.GetTextSize() * 0.75)
     txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
     txt.DrawText(
         0.2,

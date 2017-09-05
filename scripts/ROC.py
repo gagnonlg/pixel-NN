@@ -131,7 +131,7 @@ def _roc_graph(data, classes, prelim=False):
     figures.draw_atlas_label(prelim)
     txt = ROOT.TLatex()
     txt.SetNDC()
-    txt.SetTextSize(txt.GetTextSize() * 0.65)
+    txt.SetTextSize(txt.GetTextSize() * 0.75)
     txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
 
     canvas.SaveAs('ROC_{}vs{}.pdf'.format(pos, neg))
@@ -294,7 +294,7 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     figures.draw_atlas_label(preliminary)
     txt = ROOT.TLatex()
     txt.SetNDC()
-    txt.SetTextSize(txt.GetTextSize() * 0.65)
+    txt.SetTextSize(txt.GetTextSize() * 0.75)
     txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
     txt.DrawText(
         0.2,
@@ -347,8 +347,8 @@ def _main():
     args = _get_args()
     print '==> Loading data from ' + args.input
     out = _load_data(args.input, args.nclusters)
-    # print '==> Drawing the ROC curves'
-    # _do_rocs(out)
+    print '==> Drawing the ROC curves'
+    _do_rocs(out)
     print '==> Computing the confusion matrices'
     _confusion_matrices(out)
     print '==> Drawing true positive rate / false negative rate curves'
