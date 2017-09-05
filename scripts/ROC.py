@@ -288,6 +288,8 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     hist_fnr_A.SetLineStyle(2)
     hist_fnr_B.SetLineStyle(7)
     hist_fnr_B.SetLineColor(ROOT.kBlue)
+    hist_fnr_A.SetLineWidth(3)
+    hist_fnr_B.SetLineWidth(3)
     hist_fnr_A.Draw('hist same')
     hist_fnr_B.Draw('hist same')
 
