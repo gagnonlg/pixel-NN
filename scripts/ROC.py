@@ -110,9 +110,11 @@ def _roc_graph(data, classes, prelim=False):
         leg.AddEntry(graph, '{}, AUC: {:.2f}'.format(layer, auc), 'L')
 
     graphs.SetTitle(
-        ';Pr({pos} particle | {neg} particle);Pr({pos} particle | {pos} particle)'.format(  # noqa
+        ';Pr(Estimated: {pos}-particle{ps} | True: {neg}-particle{ns});Pr(Estimated: {pos}-particle{ps} | True: {pos}-particle{ps})'.format(  # noqa
             pos=pos,
-            neg=neg
+            neg=neg,
+            ps=('' if pos == 1 else 's'),
+            ns=('' if neg == 1 else 's')
         )
     )
     graphs.SetMaximum(1.5)
@@ -272,7 +274,11 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     cnv = ROOT.TCanvas('c', '', 0, 0, 800, 600)
     cnv.SetLogy()
 
-    hist_tpr.SetTitle(';{};Pr(estimated | true)'.format(_get_xlabel(cond)))
+    hist_tpr.SetTitle(';{};Pr(Estimated | true: {}-particle{})'.format(
+        _get_xlabel(cond),
+        pos,
+        '' if pos == 1 else 's'
+    ))
 
     # hist_tpr.SetMaximum(hist_tpr.GetMaximum() * 1.5)
     hist_tpr.SetMaximum(100)
@@ -301,24 +307,24 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     txt.DrawText(
         0.2,
         0.77,
-        '{}-particle clusters'.format(pos)
+        '{}-particle{} clusters'.format(pos, '' if pos == 1 else 's')
     )
 
     leg = ROOT.TLegend(0.6, 0.68, 0.84, 0.87)
     leg.SetBorderSize(0)
     leg.AddEntry(
         hist_tpr,
-        "estimated={}".format(pos),
+        "Estimated={}".format(pos),
         "L"
     )
     leg.AddEntry(
         hist_fnr_A,
-        "estimated={}".format(fnrs[0]),
+        "Estimated={}".format(fnrs[0]),
         "L"
     )
     leg.AddEntry(
         hist_fnr_B,
-        "estimated={}".format(fnrs[1]),
+        "Estimated={}".format(fnrs[1]),
         "L"
     )
     leg.Draw()
