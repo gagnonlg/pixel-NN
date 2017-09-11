@@ -199,7 +199,7 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
         0.74,
         '{}-particle{} clusters'.format(nparticle, '' if nparticle==1 else 's')
     )
-    txt.DrawText(0.2, 0.69, 'local {} direction'.format(direction))
+    txt.DrawText(0.2, 0.69, 'local {} direction'.format(direction.lower()))
 
     canvas.SaveAs(name + '.pdf')
 
@@ -250,7 +250,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
     th2.GetYaxis().SetLabelSize(0.04)
 
     th2.SetTitle(
-        ';Truth hit local X {v} {u};Truth hit local Y {v} {u}'.format(
+        ';Truth hit local x {v} {u};Truth hit local y {v} {u}'.format(
             v=variable.replace('corr_', '').rstrip('s'),
             u='[mm]' if 'residual' in variable else ''
         )
@@ -412,7 +412,7 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
         '{}-particle{} clusters'.format(nparticle, '' if nparticle==1 else 's')
     )
 
-    txt.DrawText(0.2, 0.72, 'Local {} direction'.format(direction))
+    txt.DrawText(0.2, 0.72, 'Local {} direction'.format(direction.lower()))
 
     canvas.SaveAs(name + '.pdf')
 
