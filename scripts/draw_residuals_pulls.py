@@ -197,7 +197,7 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
     txt.DrawText(
         0.2,
         0.74,
-        '{}-particle clusters'.format(nparticle)
+        '{}-particle{} clusters'.format(nparticle, '' if nparticle==1 else 's')
     )
     txt.DrawText(0.2, 0.69, 'local {} direction'.format(direction))
 
@@ -267,7 +267,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
     txt.DrawText(
         0.2,
         0.77,
-        '{}-particle clusters'.format(nparticle)
+        '{}-particle{} clusters'.format(nparticle, '' if nparticle==1 else 's')
     )
 
     txt.DrawText(
@@ -409,7 +409,7 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
     txt.DrawText(
         0.2,
         0.77,
-        '{}-particle clusters'.format(nparticle)
+        '{}-particle{} clusters'.format(nparticle, '' if nparticle==1 else 's')
     )
 
     txt.DrawText(0.2, 0.72, 'Local {} direction'.format(direction))
