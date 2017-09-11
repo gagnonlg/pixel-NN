@@ -298,9 +298,9 @@ def _plot_2d_hists(hsdict, preliminary):
 
 def _varlabel(var):
     if var == 'eta':
-        return 'global #eta_{cluster}', ''
+        return 'Cluster global #eta', ''
     if var == 'phi':
-        return 'global #phi_{cluster}', ''
+        return 'Cluster global #phi', ''
     if var == 'cluster_size':
         return 'Cluster size', ''
     if var == 'cluster_size_X':

@@ -197,15 +197,15 @@ def _get_bins(cond):
 
 def _get_xlabel(cond):
     if cond == 'globalEta':
-        return 'global #eta_{cluster}'
+        return 'Cluster global #eta'
     if cond == 'globalPhi':
-        return 'global #phi_{cluster}'
+        return 'Cluster global #phi'
     if cond == 'cluster_size':
-        return 'total cluster size'
+        return 'Total cluster size'
     if cond == 'cluster_size_X':
-        return 'cluster size in local x direction'
+        return 'Cluster size in local x direction'
     if cond == 'cluster_size_Y':
-        return 'cluster size in local y direction'
+        return 'Cluster size in local y direction'
 
 
 def _tpr_fnr(data, pos, cond, preliminary=False):
