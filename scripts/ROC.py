@@ -149,19 +149,34 @@ def _confusion_matrices(data):
                 nclas = np.count_nonzero(subdata['Output_number_estimated'] == i_nn)
                 matrix[i_nn - 1, i_true - 1] = float(nclas) / subdata.shape[0]
 
-        table = latex.Tabular('r | c c c')
+        table = latex.Tabular('r r c c c')
+        table.add_row('', '', '', latex.utils.bold('True'), '')
         table.add_row(
             '',
-            latex.utils.bold('True:1'),
-            latex.utils.bold('True:2'),
-            latex.utils.bold('True:3')
+            '',
+            latex.utils.bold('1'),
+            latex.utils.bold('2'),
+            latex.utils.bold('3')
         )
         table.add_hline()
+        table.append(latex.Command('addlinespace', options='2mm'))
         for i in range(3):
-            row = [latex.utils.bold('NN:{}'.format(i + 1))]
+            if i == 0:
+                cell0 = latex.MultiRow(
+                    3,
+                    data=latex.Command(
+                        'rotatebox',
+                        ['90', latex.utils.bold('Estimated')],
+                        'origin=c'
+                    )
+                )
+            else:
+                cell0 = ''
+            row = [cell0, latex.utils.bold('{}'.format(i + 1))]
             for j in range(3):
                 row.append('{:.2f}'.format(matrix[i, j]))
             table.add_row(row)
+            table.append(latex.Command('addlinespace', options='2mm'))
         path = 'confusion_{}.tex'.format(layer)
         with open(path, 'w') as wfile:
             wfile.write(table.dumps())
