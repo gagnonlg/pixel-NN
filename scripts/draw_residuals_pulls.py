@@ -158,7 +158,7 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
 
     stack.SetTitle(
         ';Truth hit {v} {bu};Particle density / {w} {u}'.format(
-            v=variable.replace('corr_', ''),
+            v=variable.replace('corr_', '').rstrip('s'),
             bu='[mm]' if 'residuals' in variable else '',
             w=width,
             u='mm' if 'residuals' in variable else '',
@@ -251,7 +251,7 @@ def _plot_2d(hsdict, variable, nparticle, layer, preliminary):
 
     th2.SetTitle(
         ';Truth hit local X {v} {u};Truth hit local Y {v} {u}'.format(
-            v=variable.replace('corr_', ''),
+            v=variable.replace('corr_', '').rstrip('s'),
             u='[mm]' if 'residual' in variable else ''
         )
     )
@@ -389,7 +389,7 @@ def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
             c=lbl,
             bcu=('[{}]'.format(unit) if unit != '' else ''),
             v='Truth hit {} {}'.format(
-                variable.replace('corr_', ''),
+                variable.replace('corr_', '').rstrip('s'),
                 '[mm]' if 'residuals' in variable else ''
             ),
             l='/',
