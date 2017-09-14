@@ -302,7 +302,7 @@ def _varlabel(var):
     if var == 'phi':
         return 'Cluster global #phi', ''
     if var == 'cluster_size':
-        return 'Cluster size', ''
+        return 'Cluster total size', ''
     if var == 'cluster_size_X':
         return 'Cluster size in local X direction', ''
     if var == 'cluster_size_Y':

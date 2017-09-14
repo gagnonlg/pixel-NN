@@ -216,7 +216,7 @@ def _get_xlabel(cond):
     if cond == 'globalPhi':
         return 'Cluster global #phi'
     if cond == 'cluster_size':
-        return 'Total cluster size'
+        return 'Cluster total size'
     if cond == 'cluster_size_X':
         return 'Cluster size in local x direction'
     if cond == 'cluster_size_Y':
