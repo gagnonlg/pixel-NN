@@ -33,6 +33,7 @@ argp.add_argument("--scale-ibl", default=False, action='store_true')
 argp.add_argument("--dilute", default=False, action='store_true')
 argp.add_argument("--version", default=None, help="version id used when cannot use git")
 argp.add_argument("--doValidation", default=False, action='store_true')
+argp.add_argument('--inclusive', default=False, action='store_true')
 args = argp.parse_args()
 
 if version == "":
@@ -82,7 +83,12 @@ if clustersLoop.doValidation:
 clustersLoop.scaleIBL = 3 if args.scale_ibl else 1
 logging.info('IBL matrix scaling set to {}'.format(clustersLoop.scaleIBL))
 
-logging.info("creating input for %s neural network", args.type)
+clustersLoop.inclusive = args.inclusive
+if clustersLoop.inclusive:
+    logging.info('will produce inclusive sample')
+else:
+    logging.info("creating input for %s neural network", args.type)
+
 job.algsAdd(clustersLoop)
 
 output = ROOT.EL.OutputStream("NNinput")
