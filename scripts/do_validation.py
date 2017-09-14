@@ -10,4 +10,4 @@ args.add_argument('output')
 args = args.parse_args()
 
 validation = importlib.import_module('.validation', 'pixel-NN')
-validation.make_histograms(input_paths, output_path)
+validation.make_histograms([args.input], args.output)
