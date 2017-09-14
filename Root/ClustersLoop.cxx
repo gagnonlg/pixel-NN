@@ -271,10 +271,10 @@ void ClustersLoop::clustersLoop(const DataVector<Cluster>* clusters)
 			continue;
 		}
 		// BEC
-		if (abs(out_barrelEC > 2))
+		if (abs(out_barrelEC) > 2)
 			continue;
 
-		if (abs(out_globalEta) > 2.5)
+		if (fabs(out_globalEta) > 2.5)
 			continue;
 
 		/* Fill charge matrix */
