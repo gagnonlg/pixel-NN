@@ -225,6 +225,8 @@ def _get_xlabel(cond):
 
 def _tpr_fnr(data, pos, cond, preliminary=False):
 
+    colors = {1: ROOT.kBlack, 2: ROOT.kRed, 3: ROOT.kBlue}
+
     oldmargin = ROOT.gStyle.GetPadRightMargin()
     ROOT.gStyle.SetPadRightMargin(0.15)
 
@@ -298,6 +300,7 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     # hist_tpr.SetMaximum(hist_tpr.GetMaximum() * 1.5)
     hist_tpr.SetMaximum(100)
     hist_tpr.SetMinimum(1e-3)
+    hist_tpr.SetLineColor(colors[pos])
     hist_tpr.Draw('hist')
     cnv.Update()
 
@@ -305,10 +308,10 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     scale = 10 #ROOT.gPad.GetUymax() / rightmax
     # hist_fnr_A.Scale(scale)
     # hist_fnr_B.Scale(scale)
-    hist_fnr_A.SetLineColor(ROOT.kRed)
+    hist_fnr_A.SetLineColor(colors[fnrs[0]])
     hist_fnr_A.SetLineStyle(2)
     hist_fnr_B.SetLineStyle(7)
-    hist_fnr_B.SetLineColor(ROOT.kBlue)
+    hist_fnr_B.SetLineColor(colors[fnrs[1]])
     hist_fnr_A.SetLineWidth(3)
     hist_fnr_B.SetLineWidth(3)
     hist_fnr_A.Draw('hist same')
@@ -325,23 +328,20 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
         '{}-particle{} clusters'.format(pos, '' if pos == 1 else 's')
     )
 
+    ldict = {
+        pos: hist_tpr,
+        fnrs[0]: hist_fnr_A,
+        fnrs[1]: hist_fnr_B
+    }
+
     leg = ROOT.TLegend(0.6, 0.68, 0.84, 0.87)
     leg.SetBorderSize(0)
-    leg.AddEntry(
-        hist_tpr,
-        "Estimated={}".format(pos),
-        "L"
-    )
-    leg.AddEntry(
-        hist_fnr_A,
-        "Estimated={}".format(fnrs[0]),
-        "L"
-    )
-    leg.AddEntry(
-        hist_fnr_B,
-        "Estimated={}".format(fnrs[1]),
-        "L"
-    )
+    for i in range(1, 4):
+        leg.AddEntry(
+            ldict[i],
+            "Estimated={}".format(i),
+            "L"
+        )
     leg.Draw()
 
     cnv.SaveAs('tpr_fnr_{}_{}.pdf'.format(pos, cond))
