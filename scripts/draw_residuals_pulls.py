@@ -101,7 +101,11 @@ def _fit(thist):
     sig = thist.GetStdDev()
     thist.Fit('gaus', 'Q0', '', mu - 3 * sig, mu + 3 * sig)
     fit = thist.GetFunction('gaus')
-    return fit.GetParameter('Mean'), fit.GetParameter('Sigma')
+    return (
+        fit.GetParameter('Constant'),
+        fit.GetParameter('Mean'),
+        fit.GetParameter('Sigma')
+    )
 
 
 def _fwhm(thist):
@@ -124,23 +128,35 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
     legend.SetBorderSize(0)
     stack = ROOT.THStack('stk_' + name, '')
 
+    gausses = []
     for layer, color, marker in zip(LAYERS, COLORS, MARKERS):
         LOG.debug((name, layer))
         hist = hsdict[name + '_' + layer]
-        hist.Scale(1.0 / hist.Integral())
+        if layer == 'endcap' and nparticle == 1:
+            hist.Rebin(4)
+            hist.Scale(0.5 / hist.Integral())
+        else:
+            hist.Rebin(2)
+            hist.Scale(1.0 / hist.Integral())
+            width = hist.GetBinWidth(1)
         hist.SetLineColor(color)
         hist.SetMarkerColor(color)
         hist.SetMarkerStyle(marker)
 
-        hist.Rebin(2)
-        width = hist.GetBinWidth(1)
-        stack.Add(hist)
-
         if 'pull' in variable:
-            mean, sigma = _fit(hist)
+            hist.SetLineStyle(2)
+            const, mean, sigma = _fit(hist)
+            gausses.append(ROOT.TF1('f'+layer, '[0]*TMath::Gaus(x, [1], [2])', -5, 5))
+            gausses[-1].SetLineColor(color)
+            gausses[-1].SetLineStyle(2)
+            gausses[-1].SetParameter(0, const)
+            gausses[-1].SetParameter(1, mean)
+            gausses[-1].SetParameter(2, sigma)
         else:
             mean = hist.GetMean()
             sigma = _fwhm(hist)
+
+        stack.Add(hist)
 
         legend.AddEntry(
             hist,
@@ -157,16 +173,21 @@ def _plot_1d(hsdict, variable, nparticle, direction, preliminary):
         )
 
     stack.SetTitle(
-        ';Truth hit {v} {bu};Particle density / {w} {u}'.format(
+        ';Truth hit {v} {bu};Particle density / {w} {wu}'.format(
             v=variable.replace('corr_', '').rstrip('s'),
             bu='[mm]' if 'residuals' in variable else '',
             w=width,
-            u='mm' if 'residuals' in variable else '',
+            wu='mm' if 'residuals' in variable else ''
         )
     )
 
-    stack.Draw('hist nostack')
-    stack.Draw('p same nostack')
+    if 'pull' in variable:
+        stack.Draw('p nostack')
+        for g in gausses:
+            g.Draw('same')
+    else:
+        stack.Draw('hist nostack')
+        stack.Draw('p same nostack')
 
     scaley = 1.3
     if nparticle > 1:
