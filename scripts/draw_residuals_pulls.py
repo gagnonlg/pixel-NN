@@ -9,7 +9,9 @@ import os
 import shutil
 import sys
 
+import numpy as np
 import ROOT
+import root_numpy
 
 figures = importlib.import_module('.figures', 'pixel-NN')
 
@@ -96,22 +98,36 @@ def _get_histograms(path):
     return hdict
 
 
-def _fit(thist):
+def _fit(thist, err=False):
     mu = thist.GetMean();
     sig = thist.GetStdDev()
-    thist.Fit('gaus', 'Q0', '', mu - 3 * sig, mu + 3 * sig)
-    fit = thist.GetFunction('gaus')
-    return (
-        fit.GetParameter('Constant'),
-        fit.GetParameter('Mean'),
-        fit.GetParameter('Sigma')
-    )
+    fit = thist.Fit('gaus', 'Q0S', '', mu - 3 * sig, mu + 3 * sig)
+    # fit = thist.GetFunction('gaus')
+    # return (
+    #     fit.GetParameter('Constant'),
+    #     fit.GetParameter('Mean'),
+    #     fit.GetParameter('Sigma')
+    # )
+    results = [fit.Parameter(i) for i in range(3)]
+
+    if not err:
+        return results
+
+    errors = [fit.ParError(i) for i in range(3)]
+    return results, errors
 
 
-def _fwhm(thist):
+def _fwhm(thist, err=False):
     bin1 = thist.FindFirstBinAbove(thist.GetMaximum() * 0.5)
     bin2 = thist.FindLastBinAbove(thist.GetMaximum() * 0.5)
-    return thist.GetBinCenter(bin2) - thist.GetBinCenter(bin1)
+    fwhm = thist.GetBinCenter(bin2) - thist.GetBinCenter(bin1)
+    if not err:
+        return fwhm
+
+    e1 = thist.GetBinWidth(bin2) * 0.5
+    e2 = thist.GetBinWidth(bin1) * 0.5
+    unc = np.sqrt(e1*e1 + e2*e2)
+    return fwhm, unc
 
 
 def _layer_name(layer):
@@ -330,112 +346,147 @@ def _varlabel(var):
         return 'Cluster size in local Y direction', ''
 
 
-def _plot_2d_cond(hsdict, variable, cond, nparticle, direction, prelim):
-    # pylint: disable=too-many-arguments
-    # pylint: disable=too-many-locals
-    # pylint: disable=too-many-statements
+def _get_range(cond):
+    if cond == 'eta':
+        return (-2.5, 2.5)
+    elif cond == 'phi':
+        return (-3, 3)
+    elif cond == 'cluster_size':
+        return (1, 20)
+    else:
+        return (1, 8)
 
-    hist_incl = None
-    for lyr in LAYERS:
-        name = '_'.join([variable, str(nparticle), direction, '2D', cond, lyr])
-        LOG.debug(name)
-        if hist_incl is None:
-            hist_incl = hsdict[name]
-        else:
-            hist_incl.Add(hsdict[name])
+def _get_bins(cond):
+    if cond == 'eta':
+        bins = [-2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5]
+    elif cond == 'phi':
+        bins = [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3]
+    elif cond == 'cluster_size':
+        bins = [1, 5, 10, 15, 20]
+    else:
+        bins = [1, 2, 3, 4, 5, 6, 7, 8]
 
-    name = '_'.join([variable, str(nparticle), direction, '2D', cond])
+    return bins
 
-    hist = hist_incl.ProfileX(
-        name + "_pfx",
-        1,
-        -1,
-        "s"
-    )
+
+def _set_range(hist, variable, direction, cond):
+
+    if 'pull' in variable:
+        hist.SetMinimum(0)
+        hist.SetMaximum(2.5)
+    elif direction == 'X':
+        hist.SetMinimum(0)
+        hist.SetMaximum(0.06)
+    else:
+        hist.SetMinimum(0)
+        hist.SetMaximum(0.6)
+
+def _rebin(bins, binvals, binerrs, cond):
+
+    bins = np.array(bins)
+    binvals = np.array(binvals)
+    binerrs = np.array(binerrs)
+
+    newbins = np.array(_get_bins(cond))
+    newbinvals = np.zeros(newbins.shape[0] - 1)
+    newbinerrs = np.zeros(newbins.shape[0] - 1)
+
+    # ibins: array of indices such that elements where ibins == i fall
+    # in bin with low-edge newbins[i-1]
+    # so, for example: bins = [-2.5, -2.4, -2.3, -2.2, -2.1, -2.0, -1.9, ...]
+    # and newbins = [-2.5, -2, ...]
+    # ibins: [1, 1, 1, 1, 1, 2, ...]
+    ibins = np.digitize(bins[:-1], newbins)
+
+    for i in range(1, newbins.shape[0]):
+        # selector for elements of newbin[i-1]
+        isel = np.where(ibins == i)[0]
+        newbinvals[i-1] = np.mean(binvals[isel])
+        errs = binerrs[isel]
+        newbinerrs[i-1] = (1.0 / errs.shape[0]) * np.sqrt(np.sum(errs * errs))
+
+    return newbins, newbinvals, newbinerrs
+
+
+
+def _plot_2d_cond(hsdict, variable, cond, direction, prelim):
+
+    name = '_'.join([variable, direction, '2D', cond])
 
     canvas = ROOT.TCanvas("canvas_" + name, '', 0, 0, 800, 600)
     legend = ROOT.TLegend(0.7, 0.7, 0.9, 0.85)
     legend.SetBorderSize(0)
 
-    if 'cluster_size' not in cond:
-        hist.Rebin(4)
-    elif 'cluster_size_X' not in cond and 'cluster_size_Y' not in cond:
-        hist.Rebin(5)
+    colors = {1: ROOT.kBlack, 2: ROOT.kRed, 3: ROOT.kBlue}
 
-    hist_err = hist.Clone(hist.GetName() + "_err")
-    hist_err.SetFillColor(ROOT.kYellow)
-    hist_err.SetMarkerSize(0)
+    for nparticle in [1, 2, 3]:
 
-    if 'pull' in variable:
-        rangey = 6.5
-    elif direction == 'X':
-        rangey = 0.066
-    else:
-        rangey = 0.66
+        # First, build an inclusive histogram with all the layers
+        hist_incl = None
+        for lyr in LAYERS:
+            hname = '_'.join([variable, str(nparticle), direction, '2D', cond, lyr])
+            if hist_incl is None:
+                hist_incl = hsdict[hname]
+            else:
+                hist_incl.Add(hsdict[hname])
 
-    if 'cluster_size' in cond:
-        if 'size_X' in cond or 'size_Y' in cond:
-            rangex = (1, 8)
-        else:
-            rangex = (1, 25)
-    elif 'eta' in cond:
-        rangex = (-2.5, 2.5)
-    else:
-        rangex = (-3, 3)
+        # Now, iterate through bins of the conditional variables in
+        # the right range
+        bins = []
+        binvals = []
+        binerrs = []
+        vmin, vmax = _get_range(cond)
+        for i in range(hist_incl.GetXaxis().FindBin(vmin), hist_incl.GetXaxis().FindBin(vmax)):
+            proj = hist_incl.ProjectionY("proj%d%d" % (i,nparticle), i, i)
+            if 'residuals' in variable:
+                sigma, dsigma = _fwhm(proj, err=True)
+            else:
+                (_,_,sigma), (_,_,dsigma) = _fit(proj, err=True)
+            binvals.append(sigma)
+            binerrs.append(dsigma)
+            bins.append(hist_incl.GetXaxis().GetBinLowEdge(i))
+        bins.append(hist_incl.GetXaxis().GetBinLowEdge(i+1))
 
-    if 'cluster_size' == cond:
-        bins = [1, 5, 10, 15, 25]
-        hist_err.SetBins(len(bins)-1, array.array('d', bins))
-        hist.SetBins(len(bins)-1, array.array('d', bins))
+        bins, binvals, binerrs = _rebin(bins, binvals, binerrs, cond)
 
-    hist_err.SetMaximum(rangey)
-    hist_err.SetMinimum(-rangey)
-    hist_err.GetXaxis().SetRangeUser(rangex[0], rangex[1])
-    hist.SetMaximum(rangey)
-    hist.SetMinimum(-rangey)
-    hist.GetXaxis().SetRangeUser(rangex[0], rangex[1])
-
-
-    for i in range(1, hist.GetNbinsX() + 2):
-        if hist.GetBinError(i) == 0:
-            hist.GetXaxis().SetRange(0, i-1)
-            break
-
-    hist_err.Draw("E2")
-    hist.Draw("hist same")
-
-    lbl, unit = _varlabel(cond)
-    hist_err.SetTitle(
-        ';{c} {bcu};{v} {l} {w} {cu}'.format(
-            c=lbl,
-            bcu=('[{}]'.format(unit) if unit != '' else ''),
-            v='Truth hit {} {}'.format(
-                variable.replace('corr_', '').rstrip('s'),
-                '[mm]' if 'residuals' in variable else ''
-            ),
-            l='/',
-            cu=unit,
-            w=hist.GetBinWidth(1)
+        hist = ROOT.TH1D(
+            'h_%d_%s_%s_%s' % (nparticle, direction, cond, variable),
+            '',
+            len(bins)-1,
+            array.array('d', bins)
         )
-    )
+        ROOT.SetOwnership(hist, False)
+        root_numpy.fill_hist(hist, bins[:-1], binvals)
+        for i in range(1, bins.shape[0]):
+            hist.SetBinError(i, binerrs[i-1])
+        hist.SetMarkerColor(colors[nparticle])
+        hist.SetLineColor(colors[nparticle])
+        hist.SetMarkerStyle(MARKERS[nparticle-1])
+
+        _set_range(hist, variable, direction, cond)
+
+        if nparticle == 1:
+            _set_range(hist, variable, direction, cond)
+            hist.SetTitle(';{};{}'.format(
+                _varlabel(cond)[0],
+                'Residual fwhm [mm]' if 'residuals' in variable else 'Pull #sigma',
+            ))
+
+        hist.Draw(('' if nparticle == 1 else 'same') + ' P E')
+
+        legend.AddEntry(hist, "{}-particle{} clusters".format(nparticle, 's' if nparticle > 1 else ''))
+
 
     legend.Draw()
-
     figures.draw_atlas_label(prelim)
-
     txt = ROOT.TLatex()
     txt.SetNDC()
     txt.SetTextSize(txt.GetTextSize() * 0.75)
     txt.DrawLatex(0.2, 0.82, 'PYTHIA8 dijet, 1.8 < p_{T}^{jet} < 2.5 TeV')
-    txt.DrawText(
-        0.2,
-        0.77,
-        '{}-particle{} clusters'.format(nparticle, '' if nparticle==1 else 's')
-    )
-
-    txt.DrawText(0.2, 0.72, 'Local {} direction'.format(direction.lower()))
+    txt.DrawText(0.2, 0.77, 'Local {} direction'.format(direction.lower()))
 
     canvas.SaveAs(name + '.pdf')
+
 
 
 def _plot_2d_cond_hists(hsdict, preliminary):
@@ -445,16 +496,15 @@ def _plot_2d_cond_hists(hsdict, preliminary):
     prod = itertools.product(
         VARIABLES,
         CONDITIONALS,
-        NPARTICLES,
         DIRECTIONS,
     )
 
-    for var, cond, npart, direc in prod:
+    for var, cond, direc in prod:
         _plot_2d_cond(
             hsdict=hsdict,
             variable=var,
             cond=cond,
-            nparticle=npart,
+            #nparticle=npart,
             direction=direc,
             prelim=preliminary
         )
