@@ -186,9 +186,13 @@ def _confusion_matrices(data):
 def _calc_rate(data, true, est):
     subdata = data[np.where(data['Output_number_true'] == true)]
     if subdata.shape[0] == 0:
-        return 0
+        return 0, 0
     nclas = np.count_nonzero(subdata['Output_number_estimated'] == est)
-    return float(nclas) / subdata.shape[0]
+    m = float(nclas)
+    N = float(subdata.shape[0])
+    e = m / N
+    de = np.sqrt(e * (1 - e) / N)
+    return e, de
 
 
 def _get_bins(cond):
@@ -225,7 +229,10 @@ def _get_xlabel(cond):
 
 def _tpr_fnr(data, pos, cond, preliminary=False):
 
+    ROOT.gStyle.SetErrorX(0.5)
+
     colors = {1: ROOT.kBlack, 2: ROOT.kRed, 3: ROOT.kBlue}
+    markers = {1: 8, 2: 21,  3: 23}
 
     oldmargin = ROOT.gStyle.GetPadRightMargin()
     ROOT.gStyle.SetPadRightMargin(0.15)
@@ -243,20 +250,26 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     bin_data_tpr = np.zeros(len(bins) - 1)
     bin_data_fnr_A = np.zeros(len(bins) - 1)
     bin_data_fnr_B = np.zeros(len(bins) - 1)
+    e_bin_data_tpr = np.zeros(len(bins) - 1)
+    e_bin_data_fnr_A = np.zeros(len(bins) - 1)
+    e_bin_data_fnr_B = np.zeros(len(bins) - 1)
 
     for i in range(1, len(bins)):
 
         tpr = np.zeros(3)
         fnrA = np.zeros(3)
         fnrB = np.zeros(3)
+        e_tpr = np.zeros(3)
+        e_fnrA = np.zeros(3)
+        e_fnrB = np.zeros(3)
         stats = np.zeros(3)
         for j, layer in enumerate(data.keys()):
             # get the indices corresponding to eta bins
             i_bins = np.digitize(data[layer][cond], bins)
             bin_data = data[layer][np.where(i_bins == i)]
-            tpr[j] = _calc_rate(bin_data, true=pos, est=pos)
-            fnrA[j] = _calc_rate(bin_data, true=pos, est=fnrs[0])
-            fnrB[j] = _calc_rate(bin_data, true=pos, est=fnrs[1])
+            tpr[j], e_tpr[j] = _calc_rate(bin_data, true=pos, est=pos)
+            fnrA[j], e_fnrA[j] = _calc_rate(bin_data, true=pos, est=fnrs[0])
+            fnrB[j], e_fnrB[j] = _calc_rate(bin_data, true=pos, est=fnrs[1])
             stats[j] = bin_data.shape[0]
 
         if np.all(stats == 0):
@@ -266,6 +279,9 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
         bin_data_tpr[i-1] = np.sum(weights * tpr)
         bin_data_fnr_A[i-1] = np.sum(weights * fnrA)
         bin_data_fnr_B[i-1] = np.sum(weights * fnrB)
+        e_bin_data_tpr[i-1] = np.sqrt(np.sum(weights*weights*e_tpr*e_tpr))
+        e_bin_data_fnr_A[i-1] = np.sqrt(np.sum(weights*weights*e_fnrA*e_fnrA))
+        e_bin_data_fnr_B[i-1] = np.sqrt(np.sum(weights*weights*e_fnrB*e_fnrB))
 
     hist_tpr = ROOT.TH1F(
         'h',
@@ -288,6 +304,10 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     root_numpy.fill_hist(hist_tpr, bins[:-1], weights=bin_data_tpr)
     root_numpy.fill_hist(hist_fnr_A, bins[:-1], weights=bin_data_fnr_A)
     root_numpy.fill_hist(hist_fnr_B, bins[:-1], weights=bin_data_fnr_B)
+    for i in range(1, bins.shape[0]):
+        hist_tpr.SetBinError(i, e_bin_data_tpr[i-1])
+        hist_fnr_A.SetBinError(i, e_bin_data_fnr_A[i-1])
+        hist_fnr_B.SetBinError(i, e_bin_data_fnr_B[i-1])
     cnv = ROOT.TCanvas('c', '', 0, 0, 800, 600)
     cnv.SetLogy()
 
@@ -301,7 +321,9 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     hist_tpr.SetMaximum(100)
     hist_tpr.SetMinimum(1e-3)
     hist_tpr.SetLineColor(colors[pos])
-    hist_tpr.Draw('hist')
+    hist_tpr.SetMarkerColor(colors[pos])
+    hist_tpr.SetMarkerStyle(markers[pos])
+    hist_tpr.Draw('p e')
     cnv.Update()
 
     rightmax = 1.1*max((hist_fnr_A.GetMaximum(), hist_fnr_B.GetMaximum()))
@@ -309,13 +331,17 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
     # hist_fnr_A.Scale(scale)
     # hist_fnr_B.Scale(scale)
     hist_fnr_A.SetLineColor(colors[fnrs[0]])
+    hist_fnr_A.SetMarkerColor(colors[fnrs[0]])
+    hist_fnr_A.SetMarkerStyle(markers[fnrs[0]])
     hist_fnr_A.SetLineStyle(2)
     hist_fnr_B.SetLineStyle(7)
     hist_fnr_B.SetLineColor(colors[fnrs[1]])
+    hist_fnr_B.SetMarkerColor(colors[fnrs[1]])
+    hist_fnr_B.SetMarkerStyle(markers[fnrs[1]])
     hist_fnr_A.SetLineWidth(3)
     hist_fnr_B.SetLineWidth(3)
-    hist_fnr_A.Draw('hist same')
-    hist_fnr_B.Draw('hist same')
+    hist_fnr_A.Draw('p e same')
+    hist_fnr_B.Draw('p e same')
 
     figures.draw_atlas_label(preliminary)
     txt = ROOT.TLatex()
@@ -340,7 +366,7 @@ def _tpr_fnr(data, pos, cond, preliminary=False):
         leg.AddEntry(
             ldict[i],
             "Estimated={}".format(i),
-            "L"
+            "PL"
         )
     leg.Draw()
 
@@ -371,9 +397,9 @@ def _main():
     print '==> Loading data from ' + args.input
     out = _load_data(args.input, args.nclusters)
     print '==> Drawing the ROC curves'
-    _do_rocs(out)
+    #_do_rocs(out)
     print '==> Computing the confusion matrices'
-    _confusion_matrices(out)
+    #_confusion_matrices(out)
     print '==> Drawing true positive rate / false negative rate curves'
     _do_tpr_fnr(out)
     print '==> Completed in {:.2f}s'.format(time.time() - t_0)
